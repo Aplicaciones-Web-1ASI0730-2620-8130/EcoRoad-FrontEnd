@@ -5,7 +5,7 @@ import {
   validateRoadProject,
 } from '../src/projects/domain/road-project.js'
 import { parseKilometerPost, validateRoadSections, hasRoadSectionErrors } from '../src/projects/domain/road-section.js'
-import { useProjects } from '../src/projects/application/use-projects.js'
+import { createProjectsStore } from '../src/projects/application/use-projects.js'
 
 const project = {
   code: 'PRJ-LIM-003',
@@ -44,18 +44,27 @@ test('road sections require valid, ascending kilometer posts without overlap', (
   assert.equal(hasRoadSectionErrors(validateRoadSections([section, { ...section, startPk: '32+000', endPk: '40+000' }])), false)
 })
 
-test('project registration and section editing preserve the project aggregate', () => {
-  const store = useProjects()
-  const result = store.registerProject({ ...project, sections: [section] })
+test('project store updates after successful repository commands', async () => {
+  const saved = { ...project, id: 'p-1', sections: [{ ...section, id: 's-1' }] }
+  const api = {
+    listProjects: async () => [],
+    getProject: async () => saved,
+    registerProject: async () => saved,
+    addSection: async (_id, input) => ({ ...input, id: 's-2' }),
+    updateSection: async (_id, _sectionId, input) => input,
+    removeSection: async () => ({ deleted: true }),
+  }
+  const store = createProjectsStore(api, () => 'test-company')
+  const result = await store.registerProject({ ...project, sections: [section] })
   assert.ok(result.project)
   assert.equal(result.project.sections.length, 1)
-  const invalid = store.saveSection(result.project.id, { ...section, name: 'Superpuesto', startPk: '01+000', endPk: '02+000' })
+  const invalid = await store.saveSection(result.project.id, { ...section, name: 'Superpuesto', startPk: '01+000', endPk: '02+000' })
   assert.ok(invalid.errors.range)
-  const added = store.saveSection(result.project.id, { ...section, name: 'Segundo tramo', startPk: '32+000', endPk: '40+000' })
+  const added = await store.saveSection(result.project.id, { ...section, name: 'Segundo tramo', startPk: '32+000', endPk: '40+000' })
   assert.ok(added.section)
   assert.equal(store.findProject(result.project.id).sections.length, 2)
-  const updated = store.saveSection(result.project.id, { ...added.section, workFront: 'Drenajes' })
+  const updated = await store.saveSection(result.project.id, { ...added.section, workFront: 'Drenajes' })
   assert.equal(updated.section.workFront, 'Drenajes')
-  assert.equal(store.removeSection(result.project.id, added.section.id), true)
+  assert.equal(await store.removeSection(result.project.id, added.section.id), true)
   assert.equal(store.findProject(result.project.id).sections.length, 1)
 })

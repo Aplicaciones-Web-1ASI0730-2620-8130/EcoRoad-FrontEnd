@@ -3,11 +3,13 @@ import { computed, onMounted, ref } from 'vue'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Tag from 'primevue/tag'
+import { useRoute } from 'vue-router'
 import CommercialHeader from '../components/commercial-header.vue'
 import { PLANS, SUBSCRIPTION_STATUS } from '../../domain/commercial-model.js'
 import { useCommercial } from '../../application/use-commercial.js'
 
 const commercial = useCommercial()
+const route = useRoute()
 const feedback = ref('')
 const status = computed(() => commercial.subscription.value?.status || 'missing')
 onMounted(() => commercial.refresh())
@@ -38,6 +40,8 @@ async function perform(action, message) {
       <Message severity="warn" :closable="false" class="notice">
         Fake API local: la activación y renovación son simulaciones sin pago real.
       </Message>
+      <Message v-if="route.query.access === 'required'" severity="warn" :closable="false" class="notice">Activa la suscripción de la empresa para acceder a Proyectos.</Message>
+      <Message v-if="route.query.access === 'unavailable'" severity="error" :closable="false" class="notice">No se pudo verificar la suscripción. Inicia la fake API e inténtalo de nuevo.</Message>
       <Message v-if="feedback" severity="success" :closable="false" class="notice">{{ feedback }}</Message>
       <Message v-if="commercial.error.value" severity="error" :closable="false" class="notice">{{ commercial.error.value }}</Message>
 
@@ -118,6 +122,7 @@ async function perform(action, message) {
           <i :class="commercial.hasOperationalAccess.value ? 'pi pi-lock-open' : 'pi pi-lock'" aria-hidden="true"></i>
           {{ commercial.hasOperationalAccess.value ? 'Acceso operativo habilitado en esta demostración.' : 'Los módulos operativos requieren una suscripción activa.' }}
         </p>
+        <RouterLink v-if="commercial.hasOperationalAccess.value" to="/projects" class="text-link">Ir a Proyectos <i class="pi pi-arrow-right" aria-hidden="true"></i></RouterLink>
       </template>
     </div>
   </main>

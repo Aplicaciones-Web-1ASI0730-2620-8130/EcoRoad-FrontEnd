@@ -10,7 +10,7 @@ import { PROJECT_TYPES } from '../../domain/road-project.js'
 import { useProjects } from '../../application/use-projects.js'
 
 const router = useRouter()
-const { registerProject } = useProjects()
+const { registerProject, loading } = useProjects()
 const emptySection = () => ({ name: '', startPk: '', endPk: '', workFront: '' })
 const form = reactive({ name: '', location: '', type: '', concessionaireName: '', sections: [emptySection()] })
 const errors = ref({})
@@ -24,8 +24,8 @@ function removeSection(index) {
   errors.value = {}
 }
 
-function submit() {
-  const result = registerProject(form)
+async function submit() {
+  const result = await registerProject(form)
   errors.value = result.errors
   if (result.project) router.push({ name: 'projects-detail', params: { id: result.project.id }, query: { created: '1' } })
 }
@@ -42,7 +42,8 @@ function submit() {
           <p>Registra la información principal de la obra y su concesión.</p>
         </div>
       </div>
-      <Message severity="info" :closable="false">Los proyectos y tramos de esta versión se conservan solo durante la sesión. La siguiente versión conectará la fake API.</Message>
+      <Message severity="info" :closable="false">Los datos se guardan en la fake API local mientras el servidor esté en ejecución.</Message>
+      <Message v-if="errors.form" severity="error" :closable="false">{{ errors.form }}</Message>
       <form class="project-panel new-project-form" novalidate @submit.prevent="submit">
         <div class="project-form-section-title"><span>01</span><div><h2>Información del proyecto</h2><p>Datos oficiales de la concesión y del corredor vial.</p></div></div>
         <div class="project-field">
@@ -79,7 +80,7 @@ function submit() {
         <Button type="button" label="Agregar otro tramo" icon="pi pi-plus-circle" outlined class="project-add-section" @click="addSection" />
         <div class="project-form-actions">
           <Button type="button" label="Cancelar" severity="secondary" outlined @click="router.push({ name: 'projects-list' })" />
-          <Button type="submit" label="Registrar proyecto" icon="pi pi-check" />
+          <Button type="submit" label="Registrar proyecto" icon="pi pi-check" :loading="loading" />
         </div>
       </form>
     </div>

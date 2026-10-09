@@ -8,16 +8,10 @@ En una terminal:
 
 ```sh
 npm install
-npm run api:fake
-```
-
-En otra terminal:
-
-```sh
 npm run dev
 ```
 
-Abre la URL indicada por Vite. La fake API escucha en `http://127.0.0.1:3001/api` y Vite redirige las peticiones `/api` a ese servidor. `npm run build` genera la versión de producción y `npm test` comprueba las reglas y el flujo HTTP.
+`npm run dev` inicia Vite y la fake API juntos. Abre la URL indicada por Vite. La fake API escucha en `http://127.0.0.1:3001/api` y Vite redirige las peticiones `/api` a ese servidor. `npm run api:fake` puede usarse por separado si solo necesitas la API. `npm run build` genera la versión de producción y `npm test` comprueba las reglas y los flujos HTTP.
 
 ## Alcance del contexto comercial
 
@@ -43,4 +37,10 @@ El frontend usa `commercial-api-repository.js`. Sus rutas actuales están implem
 
 La primera versión incluye el listado, búsqueda y filtros de proyectos viales, un formulario de registro básico y una vista de detalle. La segunda versión permite registrar tramos y sus frentes de trabajo junto con el proyecto, y agregarlos, editarlos o eliminarlos desde el detalle. Valida el formato de las progresivas `PK 00+000`, su orden y que los tramos no se superpongan.
 
-Los datos de ejemplo están en `src/projects/infrastructure/project-fixtures.js`; los cambios de proyectos y tramos viven solo en memoria y desaparecen al recargar. El tercer incremento conectará la fake API y la regla de suscripción.
+El tercer incremento conecta proyectos y tramos a la fake API, y consulta la suscripción antes de entrar al módulo. Los datos de ejemplo están en `src/projects/infrastructure/project-fixtures.js`. Los cambios sobreviven a una recarga del navegador, pero se reinician al detener el servidor. La empresa demo activa se usa por defecto si aún no se seleccionó una empresa; las empresas recién registradas necesitan activar su plan. La fake API valida la misma regla de acceso y separa los proyectos por empresa. Esta simulación no sustituye la autenticación ni autorización del backend real.
+
+El contrato provisional está en `docs/projects-api-contract.md`. Para otra API se puede configurar `VITE_PROJECTS_API_URL` y `VITE_COMMERCIAL_API_URL`.
+
+## Environmental Monitoring (primera versión)
+
+`src/monitoring/` incorpora el dashboard ambiental por proyecto y tramo, con indicadores de aire, ruido, agua y vibración. Las lecturas y perfiles de umbral son datos de ejemplo definidos en `src/monitoring/infrastructure/monitoring-fixtures.js`; no representan telemetría real ni certificación normativa. Este contexto referencia los identificadores de proyectos y tramos, pero no administra los sensores IoT ni genera alertas o incidentes. Los siguientes incrementos pueden incorporar historial, configuración de umbrales y registros manuales, y después conectar el contexto con una fake API.
