@@ -23,7 +23,9 @@ import './monitoring.css'
         <RouterLink to="/projects"><i class="pi pi-map" aria-hidden="true"></i> Proyectos</RouterLink>
         <RouterLink to="/monitoring" :class="{ active: $route.name === 'monitoring-dashboard' }" :aria-current="$route.name === 'monitoring-dashboard' ? 'page' : undefined"><i class="pi pi-chart-line" aria-hidden="true"></i> Monitoreo</RouterLink>
         <RouterLink to="/monitoring/history" :class="{ active: $route.name === 'monitoring-history' }" :aria-current="$route.name === 'monitoring-history' ? 'page' : undefined"><i class="pi pi-history" aria-hidden="true"></i> Historial</RouterLink>
+        <RouterLink to="/assets" :class="{ active: $route.name === 'asset-deployment' }" :aria-current="$route.name === 'asset-deployment' ? 'page' : undefined"><i class="pi pi-wifi" aria-hidden="true"></i> Sensores y puntos</RouterLink>
         <RouterLink to="/alerts" :class="{ active: $route.name === 'alerting-list' }" :aria-current="$route.name === 'alerting-list' ? 'page' : undefined"><i class="pi pi-bell" aria-hidden="true"></i> Alertas</RouterLink>
+        <RouterLink to="/compliance" :class="{ active: $route.name === 'compliance-reports' }" :aria-current="$route.name === 'compliance-reports' ? 'page' : undefined"><i class="pi pi-file" aria-hidden="true"></i> Reportes</RouterLink>
         <span class="monitoring-nav-divider">CUENTA</span>
         <RouterLink to="/commercial/subscription"><i class="pi pi-credit-card" aria-hidden="true"></i> Suscripción</RouterLink>
       </nav>
