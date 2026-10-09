@@ -1,0 +1,34 @@
+{
+  "name": "ecoroad-frontend",
+  "version": "1.0.0",
+  "description": "EcoRoad environmental monitoring SPA",
+  "scripts": {
+    "dev": "vite --configLoader native",
+    "build": "vite build --configLoader native",
+    "preview": "vite preview",
+    "test": "node --test --test-isolation=none tests/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aplicaciones-Web-1ASI0730-2620-8130/EcoRoad-FrontEnd.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Aplicaciones-Web-1ASI0730-2620-8130/EcoRoad-FrontEnd/issues"
+  },
+  "homepage": "https://github.com/Aplicaciones-Web-1ASI0730-2620-8130/EcoRoad-FrontEnd#readme",
+  "dependencies": {
+    "@primeuix/themes": "^1.2.5",
+    "primeicons": "^8.0.2",
+    "primevue": "^4.5.5",
+    "vue": "^3.5.43",
+    "vue-router": "^5.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.9",
+    "vite": "^8.3.4"
+  }
+}
