@@ -21,9 +21,9 @@ function requirePermission(actor, incident, permission) {
 export function openIncident({ alert, companyId, description }, actor, now = new Date()) {
   if (!companyId || actor?.companyId !== companyId || !actor.permissions?.includes('manage_incidents')) throw new IncidentPolicyError('PERMISSION_REQUIRED', 'No tienes permiso para registrar este incidente.')
   if (!alert?.id || !alert.projectId || !alert.sectionId) throw new IncidentPolicyError('ALERT_REQUIRED', 'Selecciona una alerta válida.')
-  if (!description?.trim()) throw new IncidentPolicyError('DESCRIPTION_REQUIRED', 'Describe el impacto ambiental observado.')
+  if (typeof description !== 'string' || !description.trim()) throw new IncidentPolicyError('DESCRIPTION_REQUIRED', 'Describe el impacto ambiental observado.')
   return {
-    id: globalThis.crypto.randomUUID(), companyId, alertId: alert.id,
+    id: `INC-${globalThis.crypto.randomUUID().slice(0, 8).toUpperCase()}`, companyId, alertId: alert.id,
     projectId: alert.projectId, projectName: alert.projectName,
     sectionId: alert.sectionId, sectionName: alert.sectionName,
     title: alert.indicator, description: description.trim(), risk: alert.risk,
@@ -42,15 +42,15 @@ export function assignResponsible(incident, user, actor) {
 export function recordCorrectiveAction(incident, description, actor, now = new Date()) {
   requirePermission(actor, incident, 'corrective_actions')
   if (incident.status !== 'in_progress') throw new IncidentPolicyError('INVALID_STATUS', 'Asigna un responsable antes de registrar acciones.')
-  if (!description?.trim()) throw new IncidentPolicyError('DESCRIPTION_REQUIRED', 'Describe la acción correctiva.')
+  if (typeof description !== 'string' || !description.trim()) throw new IncidentPolicyError('DESCRIPTION_REQUIRED', 'Describe la acción correctiva.')
   return { ...incident, actions: [...incident.actions, { id: globalThis.crypto.randomUUID(), description: description.trim(), recordedAt: now.toISOString(), recordedBy: actor.id }] }
 }
 
-export function recordFieldEvidence(incident, note, actor, now = new Date()) {
+export function recordFieldEvidence(incident, note, actor, now = new Date(), attachment = null) {
   requirePermission(actor, incident, 'field_evidence')
   if (incident.status !== 'in_progress') throw new IncidentPolicyError('INVALID_STATUS', 'La evidencia requiere un incidente en progreso.')
-  if (!note?.trim()) throw new IncidentPolicyError('EVIDENCE_REQUIRED', 'Describe la evidencia de campo.')
-  return { ...incident, evidence: [...incident.evidence, { id: globalThis.crypto.randomUUID(), note: note.trim(), recordedAt: now.toISOString(), recordedBy: actor.id }] }
+  if (typeof note !== 'string' || !note.trim()) throw new IncidentPolicyError('EVIDENCE_REQUIRED', 'Describe la evidencia de campo.')
+  return { ...incident, evidence: [...incident.evidence, { id: globalThis.crypto.randomUUID(), note: note.trim(), recordedAt: now.toISOString(), recordedBy: actor.id, attachment }] }
 }
 
 export function resolveIncident(incident, actor, now = new Date()) {

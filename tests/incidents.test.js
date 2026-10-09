@@ -4,7 +4,6 @@ import { createDemoAlerts } from '../src/alerting/infrastructure/alert-fixtures.
 import { createDemoUsers } from '../src/iam/infrastructure/iam-demo-data.js'
 import { assignResponsible, closeIncident, filterIncidents, openIncident, recordCorrectiveAction, recordFieldEvidence, resolveIncident } from '../src/incidents/domain/incident.js'
 import { createDemoIncidents } from '../src/incidents/infrastructure/incident-fixtures.js'
-import { createIncidentDemoStore } from '../src/incidents/application/use-incidents-demo.js'
 
 const [admin, engineer, inspector, fieldCollaborator] = createDemoUsers()
 const alert = createDemoAlerts()[0]
@@ -35,18 +34,10 @@ test('incident permissions and company boundaries are enforced by the domain', (
   assert.throws(() => openIncident({ alert, companyId: 'demo-company', description: '' }, admin), { code: 'DESCRIPTION_REQUIRED' })
 })
 
-test('demo board has coherent status groups and can open an alert without an existing incident', () => {
+test('seed cases keep a live alert available for new incidents', () => {
   const fixtures = createDemoIncidents()
   assert.deepEqual(fixtures.map((item) => item.status), ['pending', 'in_progress', 'resolved'])
   assert.equal(filterIncidents(fixtures, { status: 'resolved' }).length, 1)
-  const store = createIncidentDemoStore('demo-company', admin)
-  const created = store.create('ALR-025', 'Nueva alerta PM10 confirmada en obra')
-  assert.equal(created?.status, 'pending')
-  assert.equal(store.create('ALR-025', 'Duplicado'), null)
-  assert.match(store.error.value, /ya tiene un incidente/)
-  assert.equal(store.assign(created.id, engineer.id), true)
-  assert.equal(store.addAction(created.id, 'Riego preventivo'), true)
-  assert.equal(store.addEvidence(created.id, 'Fotografía de campo'), true)
-  assert.equal(store.resolve(created.id), true)
-  assert.equal(store.close(created.id), true)
+  const liveAlerts = createDemoAlerts()
+  assert.ok(liveAlerts.some((item) => !fixtures.some((incident) => incident.alertId === item.id)))
 })

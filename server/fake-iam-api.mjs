@@ -76,7 +76,7 @@ export function createFakeIamRoutes({ includeExample = true } = {}) {
     } catch (error) { return policyError(response, error) }
   }
 
-  return { handle, provisionAdmin, authenticate }
+  return { handle, provisionAdmin, authenticate, listUsers: (companyId) => [...users.values()].filter((user) => user.companyId === companyId) }
 }
 
 function policyError(response, error) {
