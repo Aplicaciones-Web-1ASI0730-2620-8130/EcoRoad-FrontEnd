@@ -6,6 +6,7 @@ import { sendJson } from './http-json.mjs'
 export function createFakeMonitoringRoutes({ subscriptions, includeExample = true }) {
   const projects = includeExample ? MONITORING_PROJECTS : []
   const readings = includeExample ? DEMO_READINGS : []
+  const handleMonitoringRequest = async (request, response, path) => {
   return async (request, response, path) => {
     const companyId = request.headers['x-demo-company-id']
     if (!companyId || Array.isArray(companyId)) return sendJson(response, 400, { code: 'COMPANY_REQUIRED', message: 'Selecciona una empresa.' })
@@ -31,4 +32,6 @@ export function createFakeMonitoringRoutes({ subscriptions, includeExample = tru
     }
     return sendJson(response, 405, { code: 'METHOD_NOT_ALLOWED', message: 'Operación de monitoreo no permitida.' })
   }
+  handleMonitoringRequest.listReadings = (companyId) => companyId === 'demo-company' ? [...readings] : []
+  return handleMonitoringRequest
 }

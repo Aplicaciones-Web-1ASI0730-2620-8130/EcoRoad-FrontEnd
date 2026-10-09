@@ -4,6 +4,7 @@ import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Tag from 'primevue/tag'
 import MonitoringShell from '../../../monitoring/presentation/components/monitoring-shell.vue'
+import { currentUser } from '../../../iam/application/iam-session.js'
 import { ALERT_STATUSES, RISK_LEVELS } from '../../domain/alert.js'
 import { useAlerts } from '../../application/use-alerts.js'
 import '../alerting.css'
@@ -66,6 +67,7 @@ onMounted(() => store.loadAlerts())
           <div class="alerting-measurement"><span>VALOR DETECTADO</span><strong>{{ selected.value }} <small>{{ selected.unit }}</small></strong><p>Perfil de referencia: {{ selected.thresholdLabel }}</p></div>
           <dl class="alerting-facts"><div><dt>Estado</dt><dd>{{ ALERT_STATUSES[selected.status].label }}</dd></div><div><dt>Detección</dt><dd>{{ formattedDate(selected.detectedAt) }}</dd></div><div><dt>Origen</dt><dd>{{ selected.source === 'manual' ? 'Registro de campo' : 'Telemetría de ejemplo' }}</dd></div><div><dt>Lectura</dt><dd>{{ selected.readingId }}</dd></div></dl>
           <div class="alerting-recommendation"><strong><i class="pi pi-exclamation-triangle" aria-hidden="true"></i> Acción sugerida</strong><p>{{ selected.recommendation }}</p></div>
+          <RouterLink v-if="['manage_incidents', 'corrective_actions', 'field_evidence'].some(permission => currentUser?.permissions?.includes(permission))" class="alerting-incident-link" :to="{ path: '/incidents', query: { alert: selected.id } }">Ver o registrar incidente relacionado <i class="pi pi-arrow-right" aria-hidden="true"></i></RouterLink>
           <template v-if="selected.status === 'active'"><label class="alerting-ack-label">Atendida por<input v-model="acknowledgeBy" type="text" maxlength="80" /></label><Button label="Registrar atención" icon="pi pi-check" class="alerting-ack-button" :loading="store.loading.value" @click="acknowledgeSelected" /></template>
           <div v-else class="alerting-ack-record"><i class="pi pi-check-circle" aria-hidden="true"></i><div><strong>Atención registrada</strong><span>{{ selected.acknowledgedBy }} · {{ formattedDate(selected.acknowledgedAt) }}</span></div></div>
           <Message v-if="feedback" :severity="selected.status === 'acknowledged' ? 'success' : 'warn'" :closable="false">{{ feedback }}</Message>
