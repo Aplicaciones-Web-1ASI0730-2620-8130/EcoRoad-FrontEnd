@@ -5,13 +5,24 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import ProjectShell from '../components/project-shell.vue'
+import RoadSectionFields from '../components/road-section-fields.vue'
 import { PROJECT_TYPES } from '../../domain/road-project.js'
 import { useProjects } from '../../application/use-projects.js'
 
 const router = useRouter()
 const { registerProject } = useProjects()
-const form = reactive({ name: '', location: '', type: '', concessionaireName: '' })
+const emptySection = () => ({ name: '', startPk: '', endPk: '', workFront: '' })
+const form = reactive({ name: '', location: '', type: '', concessionaireName: '', sections: [emptySection()] })
 const errors = ref({})
+
+function addSection() {
+  form.sections.push(emptySection())
+}
+
+function removeSection(index) {
+  form.sections.splice(index, 1)
+  errors.value = {}
+}
 
 function submit() {
   const result = registerProject(form)
@@ -31,7 +42,7 @@ function submit() {
           <p>Registra la información principal de la obra y su concesión.</p>
         </div>
       </div>
-      <Message severity="info" :closable="false">Esta primera versión usa datos temporales de demostración. El proyecto aparece en el listado hasta que recargues la página.</Message>
+      <Message severity="info" :closable="false">Los proyectos y tramos de esta versión se conservan solo durante la sesión. La siguiente versión conectará la fake API.</Message>
       <form class="project-panel new-project-form" novalidate @submit.prevent="submit">
         <div class="project-form-section-title"><span>01</span><div><h2>Información del proyecto</h2><p>Datos oficiales de la concesión y del corredor vial.</p></div></div>
         <div class="project-field">
@@ -59,6 +70,13 @@ function submit() {
             <small v-if="errors.concessionaireName" class="project-field-error">{{ errors.concessionaireName }}</small>
           </div>
         </div>
+        <div class="project-form-section-title project-form-section-divider"><span>02</span><div><h2>Tramos y frentes de trabajo</h2><p>Divide el corredor en progresivas sin superposición.</p></div></div>
+        <small v-if="errors.roadSections?.sections" class="project-field-error">{{ errors.roadSections.sections }}</small>
+        <div v-for="(section, index) in form.sections" :key="index" class="project-section-editor">
+          <div class="project-section-editor-heading"><strong>Tramo {{ String(index + 1).padStart(2, '0') }}</strong><Button v-if="form.sections.length > 1" type="button" label="Quitar tramo" icon="pi pi-trash" severity="danger" text size="small" @click="removeSection(index)" /></div>
+          <RoadSectionFields :section="section" :errors="errors.roadSections?.items?.[index]" :prefix="`new-section-${index}`" @change="form.sections[index] = $event" />
+        </div>
+        <Button type="button" label="Agregar otro tramo" icon="pi pi-plus-circle" outlined class="project-add-section" @click="addSection" />
         <div class="project-form-actions">
           <Button type="button" label="Cancelar" severity="secondary" outlined @click="router.push({ name: 'projects-list' })" />
           <Button type="submit" label="Registrar proyecto" icon="pi pi-check" />
@@ -67,4 +85,3 @@ function submit() {
     </div>
   </ProjectShell>
 </template>
-

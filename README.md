@@ -41,4 +41,6 @@ El frontend usa `commercial-api-repository.js`. Sus rutas actuales están implem
 
 ## Project and Road Site Management
 
-La primera versión incluye el listado, búsqueda y filtros de proyectos viales, un formulario de registro básico y una vista de detalle. Los datos de ejemplo están en `src/projects/infrastructure/project-fixtures.js`; los proyectos creados durante esta fase viven solo en memoria y desaparecen al recargar. El siguiente incremento añadirá tramos y frentes de trabajo; después se conectará la fake API y la regla de suscripción.
+La primera versión incluye el listado, búsqueda y filtros de proyectos viales, un formulario de registro básico y una vista de detalle. La segunda versión permite registrar tramos y sus frentes de trabajo junto con el proyecto, y agregarlos, editarlos o eliminarlos desde el detalle. Valida el formato de las progresivas `PK 00+000`, su orden y que los tramos no se superpongan.
+
+Los datos de ejemplo están en `src/projects/infrastructure/project-fixtures.js`; los cambios de proyectos y tramos viven solo en memoria y desaparecen al recargar. El tercer incremento conectará la fake API y la regla de suscripción.
