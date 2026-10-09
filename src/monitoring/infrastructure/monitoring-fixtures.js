@@ -37,4 +37,10 @@ export const DEMO_READINGS = [
   { id: 'rd-007', projectId: 'prj-lima-canta', sectionId: 'lim-04', parameterId: 'ph', value: 6.8, recordedAt: timestamp(12), source: 'manual' },
   { id: 'rd-008', projectId: 'prj-arequipa-norte', sectionId: 'aqp-01', parameterId: 'pm10', value: 162, recordedAt: timestamp(5), source: 'telemetry' },
   { id: 'rd-009', projectId: 'prj-cusco-anta', sectionId: 'cus-01', parameterId: 'ph', value: 8.3, recordedAt: timestamp(6), source: 'manual' },
+  { id: 'rd-010', projectId: 'prj-lima-canta', sectionId: 'lim-03', parameterId: 'pm10', value: 68, recordedAt: timestamp(24 * 60), source: 'telemetry' },
+  { id: 'rd-011', projectId: 'prj-lima-canta', sectionId: 'lim-03', parameterId: 'pm10', value: 93, recordedAt: timestamp(2 * 24 * 60), source: 'telemetry' },
+  { id: 'rd-012', projectId: 'prj-lima-canta', sectionId: 'lim-03', parameterId: 'pm10', value: 74, recordedAt: timestamp(3 * 24 * 60), source: 'telemetry' },
+  { id: 'rd-013', projectId: 'prj-lima-canta', sectionId: 'lim-03', parameterId: 'pm10', value: 57, recordedAt: timestamp(4 * 24 * 60), source: 'telemetry' },
+  { id: 'rd-014', projectId: 'prj-lima-canta', sectionId: 'lim-03', parameterId: 'pm10', value: 112, recordedAt: timestamp(5 * 24 * 60), source: 'telemetry' },
+  { id: 'rd-015', projectId: 'prj-lima-canta', sectionId: 'lim-03', parameterId: 'pm10', value: 49, recordedAt: timestamp(6 * 24 * 60), source: 'telemetry' },
 ]
