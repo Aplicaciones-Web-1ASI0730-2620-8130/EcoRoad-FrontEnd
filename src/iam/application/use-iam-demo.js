@@ -1,33 +1,38 @@
 import { computed, ref } from 'vue'
-import { assignRole, grantUserAccess, inviteUser, revokeUserAccess, setUserPermissions, validateInvitation } from '../domain/user-access.js'
-import { createDemoUsers, DEMO_ADMIN_ID } from '../infrastructure/iam-demo-data.js'
+import { validateInvitation } from '../domain/user-access.js'
+import { getIamApi } from './iam-session.js'
 
-// First delivery: page-local simulation. HTTP persistence and sign-in arrive with the fake API.
-export function createIamDemoStore(companyId = 'demo-company') {
-  const users = ref(createDemoUsers().filter((user) => user.companyId === companyId))
-  const selectedId = ref(users.value[1]?.id || users.value[0]?.id || null)
+// Page state backed by the fake IAM API.
+export function createIamDemoStore(companyId, api = getIamApi()) {
+  const users = ref([])
+  const selectedId = ref(null)
   const selected = computed(() => users.value.find((user) => user.id === selectedId.value) || null)
-  const actor = computed(() => users.value.find((user) => user.id === DEMO_ADMIN_ID))
   const error = ref('')
   const fieldErrors = ref({})
 
-  function update(action, id) {
+  async function load() {
     error.value = ''
     try {
-      const user = users.value.find((item) => item.id === id)
-      if (!user) return false
-      const changed = action(user, actor.value)
-      users.value = users.value.map((item) => item.id === id ? changed : item)
+      users.value = await api.listUsers()
+      if (!users.value.some((user) => user.id === selectedId.value)) selectedId.value = users.value[1]?.id || users.value[0]?.id || null
+    } catch (cause) { error.value = cause.message }
+  }
+
+  async function update(action, id) {
+    error.value = ''
+    try {
+      const changed = await action(id)
+      users.value = users.value.map((user) => user.id === id ? changed : user)
       return true
     } catch (cause) { error.value = cause.message; return false }
   }
 
-  function invite(input) {
+  async function invite(input) {
     error.value = ''
     fieldErrors.value = validateInvitation({ ...input, companyId }, users.value)
     if (Object.keys(fieldErrors.value).length) return null
     try {
-      const user = inviteUser({ ...input, companyId }, users.value, actor.value)
+      const user = await api.invite(input)
       users.value = [...users.value, user]
       selectedId.value = user.id
       return user
@@ -35,10 +40,10 @@ export function createIamDemoStore(companyId = 'demo-company') {
   }
 
   return {
-    users, selectedId, selected, error, fieldErrors, invite,
-    grant: (id) => update((user, admin) => grantUserAccess(user, admin), id),
-    revoke: (id) => update((user, admin) => revokeUserAccess(user, admin), id),
-    changeRole: (id, roleId) => update((user, admin) => assignRole(user, roleId, admin), id),
-    changePermissions: (id, permissions) => update((user, admin) => setUserPermissions(user, permissions, admin), id),
+    users, selectedId, selected, error, fieldErrors, load, invite,
+    grant: (id) => update(api.grant, id),
+    revoke: (id) => update(api.revoke, id),
+    changeRole: (id, roleId) => update((target) => api.changeRole(target, roleId), id),
+    changePermissions: (id, permissions) => update((target) => api.changePermissions(target, permissions), id),
   }
 }
