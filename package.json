@@ -4,6 +4,7 @@
   "description": "EcoRoad environmental monitoring SPA",
   "scripts": {
     "dev": "vite --configLoader native",
+    "api:fake": "node server/start.mjs",
     "build": "vite build --configLoader native",
     "preview": "vite preview",
     "test": "node --test --test-isolation=none tests/*.test.js"

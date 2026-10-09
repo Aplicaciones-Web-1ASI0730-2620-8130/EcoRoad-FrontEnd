@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Tag from 'primevue/tag'
@@ -10,13 +10,14 @@ import { useCommercial } from '../../application/use-commercial.js'
 const commercial = useCommercial()
 const feedback = ref('')
 const status = computed(() => commercial.subscription.value?.status || 'missing')
+onMounted(() => commercial.refresh())
 const formattedDate = (date) => date
   ? new Intl.DateTimeFormat('es-PE', { dateStyle: 'long' }).format(new Date(date))
   : 'Pendiente'
 
-function perform(action, message) {
+async function perform(action, message) {
   feedback.value = ''
-  if (action()) feedback.value = message
+  if (await action()) feedback.value = message
 }
 </script>
 
@@ -35,7 +36,7 @@ function perform(action, message) {
       </div>
 
       <Message severity="warn" :closable="false" class="notice">
-        Modo demo local: la activación y renovación de esta pantalla son simulaciones sin pago real.
+        Fake API local: la activación y renovación son simulaciones sin pago real.
       </Message>
       <Message v-if="feedback" severity="success" :closable="false" class="notice">{{ feedback }}</Message>
       <Message v-if="commercial.error.value" severity="error" :closable="false" class="notice">{{ commercial.error.value }}</Message>
@@ -43,8 +44,11 @@ function perform(action, message) {
       <div v-if="!commercial.company.value" class="empty-state">
         <i class="pi pi-building" aria-hidden="true"></i>
         <h2>Aún no hay una empresa registrada</h2>
-        <p>Registra tu empresa para elegir un plan y consultar su estado.</p>
+        <p>Registra tu empresa o carga la cuenta de ejemplo para revisar su suscripción.</p>
         <RouterLink to="/commercial/register" class="text-link">Ir al registro <i class="pi pi-arrow-right" aria-hidden="true"></i></RouterLink>
+        <div class="example-action">
+          <Button label="Cargar empresa de ejemplo" icon="pi pi-database" outlined :loading="commercial.loading.value" @click="perform(commercial.loadExample, 'Cuenta de ejemplo cargada desde la fake API.')" />
+        </div>
       </div>
 
       <template v-else>
@@ -97,16 +101,19 @@ function perform(action, message) {
               v-if="status !== SUBSCRIPTION_STATUS.ACTIVE"
               label="Simular activación"
               icon="pi pi-check-circle"
+              :loading="commercial.loading.value"
               @click="perform(commercial.activate, 'Suscripción activada en el modo demo.')"
             />
             <Button
               v-else
               label="Simular renovación"
               icon="pi pi-refresh"
+              :loading="commercial.loading.value"
               @click="perform(commercial.renew, 'Vigencia renovada en el modo demo.')"
             />
           </div>
         </section>
+        <button type="button" class="change-company" @click="commercial.clearSelection(); feedback = ''">Cambiar empresa de demostración</button>
         <p class="access-note">
           <i :class="commercial.hasOperationalAccess.value ? 'pi pi-lock-open' : 'pi pi-lock'" aria-hidden="true"></i>
           {{ commercial.hasOperationalAccess.value ? 'Acceso operativo habilitado en esta demostración.' : 'Los módulos operativos requieren una suscripción activa.' }}
@@ -115,4 +122,3 @@ function perform(action, message) {
     </div>
   </main>
 </template>
-

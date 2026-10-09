@@ -1,6 +1,6 @@
 # Commercial and Subscription Management: contrato HTTP propuesto
 
-Este documento define la frontera que necesitará la SPA para sustituir el repositorio demo. **Las rutas y formas JSON son una propuesta**, pendiente de acuerdo con el equipo backend. No se realizan pagos desde el navegador.
+Este documento define la frontera HTTP que usa la SPA. Las rutas están implementadas por la fake API local; **son una propuesta para el futuro backend**, pendiente de acuerdo con ese equipo. No se realizan pagos desde el navegador.
 
 ## Operaciones
 
@@ -11,7 +11,7 @@ Este documento define la frontera que necesitará la SPA para sustituir el repos
 - `POST /company-accounts/{companyId}/subscription/activation-requests`: iniciar el proceso de activación; el backend devuelve la información necesaria para continuar el pago o una solicitud pendiente.
 - `POST /company-accounts/{companyId}/subscription/renewal-requests`: iniciar la renovación.
 
-El backend confirma la activación o renovación después de recibir una confirmación confiable del proveedor de pagos. El frontend vuelve a consultar `GET .../subscription` para mostrar el estado final. Una respuesta a la solicitud de activación no equivale a `Subscription activated`.
+La fake API confirma inmediatamente la activación o renovación y devuelve `{ "simulated": true, "subscription": ... }`. En producción, el backend deberá esperar una confirmación confiable del proveedor de pagos; una solicitud de activación no equivaldrá por sí sola a `Subscription activated`.
 
 ## Modelo de lectura mínimo
 
@@ -33,4 +33,3 @@ Estados mínimos: `pending`, `active`, `expired`. El backend debe definir estado
 - El identificador de empresa y el token deben provenir de la sesión de IAM. El navegador no debe elegir libremente otra empresa.
 - Las respuestas de error deben incluir `message` y, de ser posible, un `code` estable. La UI debe distinguir al menos validación (400/422), falta de acceso (401/403), conflicto de RUC o plan (409) y fallo temporal (5xx).
 - No enviar ni almacenar contraseñas en Commercial. La pasarela de pagos recibe la información de pago por un flujo seguro definido por backend.
-
