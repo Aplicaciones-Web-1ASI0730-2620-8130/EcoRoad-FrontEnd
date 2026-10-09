@@ -1,3 +1,6 @@
+# EcoRoad FrontEnd
+
+Aplicación Vue con PrimeVue para gestión ambiental de proyectos viales. Los módulos se organizan por bounded context: Commercial, Projects, Environmental Monitoring, Alerting and Risk Evaluation y Monitoring Asset and Deployment.
 # EcoRoad Frontend
 
 SPA de EcoRoad construida con Vue, Vite y PrimeVue. Esta rama implementa el bounded context **Commercial and Subscription Management**.
@@ -57,6 +60,7 @@ npm install
 npm run dev
 ```
 
+`npm run dev` inicia Vite y la fake API local. Abre la dirección indicada por Vite y visita `/assets` para administrar sensores y puntos. La empresa de demostración tiene una suscripción activa; los datos de la fake API se reinician al detener el servidor.
 `npm run dev` inicia Vite y la fake API juntos. Abre la URL indicada por Vite. La fake API escucha en `http://127.0.0.1:3001/api` y Vite redirige las peticiones `/api` a ese servidor. `npm run api:fake` puede usarse por separado si solo necesitas la API. `npm run build` genera la versión de producción y `npm test` comprueba las reglas y los flujos HTTP.
 
 ## Alcance del contexto comercial
@@ -107,4 +111,5 @@ npm test
 npm run build
 ```
 
+Consulta [el contexto de activos](docs/assets-context.md) y [el contrato de su fake API](docs/assets-api-contract.md) para el modelo y sus flujos.
 Consulta [el contexto de activos](docs/assets-context.md), [el contrato de su fake API](docs/assets-api-contract.md) y [el alcance inicial de Compliance and Reporting](docs/compliance-context.md).
