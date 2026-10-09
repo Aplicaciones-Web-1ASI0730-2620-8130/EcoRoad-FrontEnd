@@ -59,3 +59,18 @@ export function summarizeMonitoring(project, readings, profiles) {
   const statuses = evaluated.map((reading) => reading.status)
   return { sections, parameters, status: statuses.length ? worstStatus(statuses) : null, latestAt: evaluated.reduce((latest, reading) => reading.recordedAt > latest ? reading.recordedAt : latest, '') }
 }
+
+export function validateHistoryFilters({ from, to }) {
+  if (from && to && from > to) return 'La fecha inicial debe ser anterior o igual a la fecha final.'
+  return ''
+}
+
+export function filterEnvironmentalHistory(readings, { projectId, sectionId = 'all', parameterId, from = '', to = '' }) {
+  return readings.filter((reading) =>
+    reading.projectId === projectId &&
+    reading.parameterId === parameterId &&
+    (sectionId === 'all' || reading.sectionId === sectionId) &&
+    (!from || reading.recordedAt.slice(0, 10) >= from) &&
+    (!to || reading.recordedAt.slice(0, 10) <= to),
+  ).sort((a, b) => a.recordedAt.localeCompare(b.recordedAt))
+}

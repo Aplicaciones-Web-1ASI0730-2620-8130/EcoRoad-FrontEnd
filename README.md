@@ -41,6 +41,8 @@ El tercer incremento conecta proyectos y tramos a la fake API, y consulta la sus
 
 El contrato provisional está en `docs/projects-api-contract.md`. Para otra API se puede configurar `VITE_PROJECTS_API_URL` y `VITE_COMMERCIAL_API_URL`.
 
-## Environmental Monitoring (primera versión)
+## Environmental Monitoring (segunda versión)
 
-`src/monitoring/` incorpora el dashboard ambiental por proyecto y tramo, con indicadores de aire, ruido, agua y vibración. Las lecturas y perfiles de umbral son datos de ejemplo definidos en `src/monitoring/infrastructure/monitoring-fixtures.js`; no representan telemetría real ni certificación normativa. Este contexto referencia los identificadores de proyectos y tramos, pero no administra los sensores IoT ni genera alertas o incidentes. Los siguientes incrementos pueden incorporar historial, configuración de umbrales y registros manuales, y después conectar el contexto con una fake API.
+`src/monitoring/` incorpora el dashboard ambiental por proyecto y tramo, con indicadores de aire, ruido, agua y vibración. Las lecturas y perfiles de umbral son datos de ejemplo definidos en `src/monitoring/infrastructure/monitoring-fixtures.js`; no representan telemetría real ni certificación normativa. Este contexto referencia los identificadores de proyectos y tramos, pero no administra los sensores IoT ni genera alertas o incidentes.
+
+El historial de indicadores se consulta en `/monitoring/history` y permite filtrar por proyecto, tramo, parámetro y fechas. El dashboard y el historial consumen la fake API local mediante `monitoring-api-repository.js`; el contrato provisional está en `docs/monitoring-api-contract.md`.
