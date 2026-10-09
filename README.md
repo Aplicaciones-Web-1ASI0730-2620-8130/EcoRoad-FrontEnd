@@ -1,6 +1,6 @@
 # EcoRoad Frontend
 
-SPA de EcoRoad construida con Vue, Vite y PrimeVue. Esta rama implementa el bounded context **Commercial and Subscription Management**.
+SPA de EcoRoad construida con Vue, Vite y PrimeVue. El código se organiza por bounded contexts.
 
 ## Ejecutar con la fake API
 
@@ -38,3 +38,7 @@ La fake API confirma inmediatamente la activación y renovación para simular el
 ## Integración posterior
 
 El frontend usa `commercial-api-repository.js`. Sus rutas actuales están implementadas por `server/fake-commercial-api.mjs` y descritas en `docs/commercial-api-contract.md`. Para apuntar a otra API se puede configurar `VITE_COMMERCIAL_API_URL`; antes habrá que acordar el contrato definitivo, conectar IAM y definir el proveedor de pagos.
+
+## Project and Road Site Management
+
+La primera versión incluye el listado, búsqueda y filtros de proyectos viales, un formulario de registro básico y una vista de detalle. Los datos de ejemplo están en `src/projects/infrastructure/project-fixtures.js`; los proyectos creados durante esta fase viven solo en memoria y desaparecen al recargar. El siguiente incremento añadirá tramos y frentes de trabajo; después se conectará la fake API y la regla de suscripción.
