@@ -1,0 +1,43 @@
+// Read models based on the project-list mockup. Replaced by the fake API in commit 3.
+export const PROJECT_FIXTURES = [
+  {
+    id: 'prj-arequipa-norte',
+    code: 'PRJ-AQP-001',
+    name: 'Carretera Arequipa - Norte',
+    location: 'Arequipa · PK 00+000 a 78+200',
+    type: 'rehabilitation',
+    concessionaireName: 'Concesión Sur',
+    environmentalStatus: 'critical',
+    environmentalNote: 'PM10 y ruido superan el límite',
+    sensorCount: 10,
+    alertCount: 4,
+    incidentCount: 3,
+  },
+  {
+    id: 'prj-cusco-anta',
+    code: 'PRJ-CUS-002',
+    name: 'Vía Cusco - Anta',
+    location: 'Cusco · PK 12+400 a 45+800',
+    type: 'maintenance',
+    concessionaireName: 'Corredor Andino',
+    environmentalStatus: 'observation',
+    environmentalNote: 'Turbidez moderada',
+    sensorCount: 10,
+    alertCount: 2,
+    incidentCount: 1,
+  },
+  {
+    id: 'prj-lima-canta',
+    code: 'PRJ-LIM-003',
+    name: 'Carretera Lima - Canta',
+    location: 'Lima · PK 00+000 a 112+000',
+    type: 'construction',
+    concessionaireName: 'Sierra Central',
+    environmentalStatus: 'optimal',
+    environmentalNote: 'Cumple con los parámetros ambientales',
+    sensorCount: 12,
+    alertCount: 1,
+    incidentCount: 2,
+  },
+]
+
