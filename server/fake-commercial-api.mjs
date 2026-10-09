@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { sendJson as send, readJson } from './http-json.mjs'
 import { createFakeProjectRoutes } from './fake-project-api.mjs'
 import { createFakeMonitoringRoutes } from './fake-monitoring-api.mjs'
+import { createFakeAlertingRoutes } from './fake-alerting-api.mjs'
 
 const planIds = new Set(['base', 'professional', 'enterprise'])
 const companyTypes = new Set(['construction', 'maintenance', 'supervision'])
@@ -40,6 +41,7 @@ export function createFakeCommercialApi({ includeExample = true } = {}) {
 
   const handleProjects = createFakeProjectRoutes({ subscriptions, includeExample })
   const handleMonitoring = createFakeMonitoringRoutes({ subscriptions, includeExample })
+  const handleAlerting = createFakeAlertingRoutes({ subscriptions, includeExample })
 
   const server = createServer(async (request, response) => {
     try {
@@ -52,6 +54,9 @@ export function createFakeCommercialApi({ includeExample = true } = {}) {
       }
       if (path === '/api/monitoring/projects' || path.startsWith('/api/monitoring/projects/')) {
         return await handleMonitoring(request, response, path)
+      }
+      if (path === '/api/alerts' || path.startsWith('/api/alerts/')) {
+        return await handleAlerting(request, response, path)
       }
       if (path === '/api/company-accounts' && request.method === 'POST') {
         const input = await readJson(request)
