@@ -1,8 +1,12 @@
 import { computed, ref } from 'vue'
 import { PROJECT_FIXTURES } from '../infrastructure/project-fixtures.js'
 import { matchesProjectFilters, validateRoadProject } from '../domain/road-project.js'
+import { hasRoadSectionErrors, normalizeRoadSection, validateRoadSections } from '../domain/road-section.js'
 
-const projects = ref(PROJECT_FIXTURES.map((project) => ({ ...project })))
+const projects = ref(PROJECT_FIXTURES.map((project) => ({
+  ...project,
+  sections: (project.sections || []).map((section) => ({ ...section })),
+})))
 
 export function useProjects() {
   const counts = computed(() => ({
@@ -19,6 +23,8 @@ export function useProjects() {
     filterProjects: (filters) => projects.value.filter((project) => matchesProjectFilters(project, filters)),
     registerProject(input) {
       const errors = validateRoadProject(input)
+      const sectionErrors = validateRoadSections(input.sections)
+      if (hasRoadSectionErrors(sectionErrors)) errors.roadSections = sectionErrors
       if (Object.keys(errors).length) return { errors, project: null }
       const project = {
         id: crypto.randomUUID(),
@@ -32,10 +38,34 @@ export function useProjects() {
         sensorCount: 0,
         alertCount: 0,
         incidentCount: 0,
+        sections: input.sections.map(normalizeRoadSection),
       }
       projects.value.unshift(project)
       return { errors: {}, project }
     },
+    saveSection(projectId, input) {
+      const project = projects.value.find((item) => item.id === projectId)
+      if (!project) return { error: 'Proyecto no encontrado.' }
+      const otherSections = project.sections.filter((section) => section.id !== input.id)
+      const errors = validateRoadSections([...otherSections, input])
+      if (hasRoadSectionErrors(errors)) return { errors: errors.items.at(-1) }
+      const section = normalizeRoadSection(input)
+      if (input.id) {
+        const index = project.sections.findIndex((item) => item.id === input.id)
+        if (index < 0) return { error: 'Tramo no encontrado.' }
+        project.sections.splice(index, 1, section)
+      } else {
+        project.sections.push(section)
+      }
+      return { section }
+    },
+    removeSection(projectId, sectionId) {
+      const project = projects.value.find((item) => item.id === projectId)
+      if (!project) return false
+      const index = project.sections.findIndex((section) => section.id === sectionId)
+      if (index < 0) return false
+      project.sections.splice(index, 1)
+      return true
+    },
   }
 }
-

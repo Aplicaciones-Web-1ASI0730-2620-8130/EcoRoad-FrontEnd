@@ -91,6 +91,26 @@
 .detail-metrics span { display: flex; flex-direction: column; gap: 6px; color: #718497; font-size: 11px; }
 .detail-metrics strong { font-size: 22px; color: #1f3446; }
 .project-sections-empty { margin-top: 20px; }
+.project-form-section-divider { border-top: 1px solid #e7eef1; padding-top: 26px; margin-top: 6px; }
+.project-section-editor { border: 1px solid #dce8ed; background: #f8fbfc; border-radius: 8px; padding: 17px 18px 0; margin: 16px 0; }
+.project-section-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; color: #244555; font-size: 13px; }
+.project-section-editor-heading .p-button { padding: 4px 8px; }
+.project-range-error { margin: -12px 0 15px; }
+.project-add-section { margin: 0 0 24px; }
+.project-sections-panel { margin-top: 20px; padding: 24px; }
+.project-sections-heading { display: flex; justify-content: space-between; align-items: start; gap: 16px; margin-bottom: 18px; }
+.project-sections-heading h2 { margin: 0; font-size: 17px; }
+.project-sections-heading p, .project-empty-sections { margin: 7px 0 0; color: #6b7f93; font-size: 12px; line-height: 1.5; }
+.project-section-list { display: grid; gap: 10px; }
+.project-section-card { display: flex; align-items: center; gap: 16px; padding: 15px; border: 1px solid #dce7ec; border-radius: 8px; }
+.project-section-number { display: grid; place-items: center; flex: 0 0 34px; height: 34px; border-radius: 8px; color: #078460; background: #e2f7ed; font-size: 12px; font-weight: 800; }
+.project-section-summary { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; font-size: 13px; }
+.project-section-summary span, .project-section-summary small { color: #6d8295; font-size: 12px; }
+.project-section-actions { display: flex; gap: 2px; }
+.project-section-detail-editor { max-width: 670px; margin-top: 20px; padding: 20px; border: 1px solid #b9ddd0; border-radius: 8px; background: #f8fcfa; }
+.project-section-detail-editor h3 { margin: 0 0 20px; font-size: 15px; }
+.project-section-detail-editor .project-form-actions { padding-top: 16px; }
+.project-sections-panel > .p-message { margin-bottom: 15px; }
 @media (max-width: 1000px) {
   .project-app { grid-template-columns: 210px minmax(0, 1fr); }
   .project-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -110,4 +130,8 @@
   .project-stat-grid { gap: 10px; }
   .project-stat { min-height: 100px; }
   .filters-panel select { flex: 1 1 150px; }
+  .project-sections-heading { flex-direction: column; }
+  .project-section-card { flex-wrap: wrap; }
+  .project-section-summary { flex-basis: calc(100% - 52px); }
+  .project-section-actions { width: 100%; justify-content: flex-end; }
 }

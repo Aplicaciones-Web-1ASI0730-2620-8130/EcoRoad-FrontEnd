@@ -12,6 +12,10 @@ export const PROJECT_FIXTURES = [
     sensorCount: 10,
     alertCount: 4,
     incidentCount: 3,
+    sections: [
+      { id: 'aqp-01', name: 'Acceso norte', startPk: '00+000', endPk: '42+200', workFront: 'Movimiento de tierras', status: 'active' },
+      { id: 'aqp-02', name: 'Quebrada San José', startPk: '42+200', endPk: '78+200', workFront: 'Rehabilitación de calzada', status: 'active' },
+    ],
   },
   {
     id: 'prj-cusco-anta',
@@ -25,6 +29,9 @@ export const PROJECT_FIXTURES = [
     sensorCount: 10,
     alertCount: 2,
     incidentCount: 1,
+    sections: [
+      { id: 'cus-01', name: 'Tramo Anta', startPk: '12+400', endPk: '45+800', workFront: 'Mantenimiento de drenajes', status: 'active' },
+    ],
   },
   {
     id: 'prj-lima-canta',
@@ -38,6 +45,11 @@ export const PROJECT_FIXTURES = [
     sensorCount: 12,
     alertCount: 1,
     incidentCount: 2,
+    sections: [
+      { id: 'lim-01', name: 'Trapiche - Chorrillos', startPk: '00+000', endPk: '32+000', workFront: 'Movimiento de tierras', status: 'active' },
+      { id: 'lim-02', name: 'Yangas - Santa Rosa', startPk: '32+000', endPk: '64+000', workFront: 'Planta de agregados', status: 'active' },
+      { id: 'lim-03', name: 'Huamantanga - Yaso', startPk: '64+000', endPk: '92+000', workFront: 'Corte y nivelación', status: 'active' },
+      { id: 'lim-04', name: 'Canta - Obrajillo', startPk: '92+000', endPk: '112+000', workFront: 'Estabilización de taludes', status: 'active' },
+    ],
   },
 ]
-
