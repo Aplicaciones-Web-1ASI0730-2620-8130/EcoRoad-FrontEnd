@@ -40,4 +40,5 @@ export async function signOut() {
 }
 
 export function hasSessionToken() { return Boolean(token.value) }
+export function getSessionToken() { return token.value }
 export function getIamApi() { return api }
