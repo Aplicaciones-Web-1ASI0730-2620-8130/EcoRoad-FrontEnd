@@ -16,6 +16,7 @@ export function createFakeProjectRoutes({ subscriptions, includeExample = true }
   }
   let nextCode = PROJECT_FIXTURES.length + 1
 
+  const handleProjectRequest = async (request, response, path) => {
   return async (request, response, path) => {
     const companyId = request.headers['x-demo-company-id']
     if (!companyId || Array.isArray(companyId)) {
@@ -90,4 +91,7 @@ export function createFakeProjectRoutes({ subscriptions, includeExample = true }
     }
     return sendJson(response, 405, { code: 'METHOD_NOT_ALLOWED', message: 'Operación no permitida.' })
   }
+  handleProjectRequest.listProjects = (companyId) => [...(projects.get(companyId)?.values() || [])]
+  handleProjectRequest.getProject = (companyId, projectId) => projects.get(companyId)?.get(projectId) || null
+  return handleProjectRequest
 }
