@@ -11,9 +11,6 @@ import { createCommercialApiRepository } from './commercial/infrastructure/comme
 import { canAccessOperationalModules } from './commercial/domain/commercial-model.js'
 import { getDemoCompanyId } from './projects/infrastructure/demo-company.js'
 import { restoreSession } from './iam/application/iam-session.js'
-import { createCommercialApiRepository } from './commercial/infrastructure/commercial-api-repository.js'
-import { canAccessOperationalModules } from './commercial/domain/commercial-model.js'
-import { getDemoCompanyId } from './projects/infrastructure/demo-company.js'
 
 const commercialApi = createCommercialApiRepository({
   baseUrl: import.meta.env.VITE_COMMERCIAL_API_URL || new URL('/api/', window.location.origin).href,
@@ -22,25 +19,11 @@ const commercialApi = createCommercialApiRepository({
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', redirect: '/commercial/register' },
-    { path: '/commercial', children: commercialRoutes },
-    { path: '/:pathMatch(.*)*', redirect: '/commercial/register' },
-  ],
-})
-
-router.afterEach((to) => {
-  document.title = `${to.meta.title || 'Gestión comercial'} | EcoRoad`
-})
-
-export default router
-
     { path: '/', redirect: '/projects' },
     { path: '/commercial', children: commercialRoutes },
     { path: '/projects', children: projectRoutes },
     { path: '/monitoring', children: monitoringRoutes },
     { path: '/alerts', children: alertingRoutes },
-    { path: '/assets', children: assetRoutes },
-    { path: '/compliance', children: complianceRoutes },
     { path: '/incidents', children: incidentRoutes },
     { path: '/assets', children: assetRoutes },
     { path: '/compliance', children: complianceRoutes },
@@ -50,9 +33,6 @@ export default router
 })
 
 router.beforeEach(async (to) => {
-  if (!to.path.startsWith('/projects') && !to.path.startsWith('/monitoring') && !to.path.startsWith('/alerts') && !to.path.startsWith('/assets')) return true
-  if (!to.path.startsWith('/projects') && !to.path.startsWith('/monitoring')) return true
-  if (!to.path.startsWith('/projects') && !to.path.startsWith('/monitoring') && !to.path.startsWith('/alerts') && !to.path.startsWith('/assets') && !to.path.startsWith('/compliance')) return true
   const protectedArea = ['/projects', '/monitoring', '/alerts', '/incidents', '/assets', '/compliance', '/iam/collaborators'].some((prefix) => to.path === prefix || to.path.startsWith(`${prefix}/`))
   if (!protectedArea) return true
   const user = await restoreSession()
@@ -64,7 +44,6 @@ router.beforeEach(async (to) => {
         : to.path.startsWith('/alerts') ? 'consult_alerts'
           : to.path.startsWith('/monitoring') ? 'consult_indicators' : 'view_projects'
   if (!(Array.isArray(required) ? required.some((permission) => user.permissions.includes(permission)) : user.permissions.includes(required))) return { path: '/iam/forbidden' }
-  if (!to.path.startsWith('/projects') && !to.path.startsWith('/monitoring') && !to.path.startsWith('/alerts')) return true
   try {
     const subscription = await commercialApi.getSubscription(getDemoCompanyId())
     if (canAccessOperationalModules(subscription)) return true

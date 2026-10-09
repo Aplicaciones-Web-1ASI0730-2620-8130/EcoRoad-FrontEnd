@@ -104,6 +104,12 @@ npm run build
 ```
 
 Consulta [el contexto de activos](docs/assets-context.md), [el contrato de su fake API](docs/assets-api-contract.md) y [el alcance inicial de Compliance and Reporting](docs/compliance-context.md).
+
+## Demo en Vercel
+
+La función `api/index.js` atiende `/api/*` en el mismo dominio del frontend. `vercel.json` envía esas solicitudes a la función y conserva las rutas de Vue para enlaces directos como `/iam/login`.
+
+El usuario de demostración `c.mendoza@empresa.pe` puede iniciar sesión con la contraseña indicada en la pantalla. La fake API guarda empresas, permisos, proyectos e incidencias en memoria: esos cambios pueden perderse entre instancias o reinicios de Vercel. Para datos compartidos y persistentes se necesita un backend con almacenamiento externo.
 `npm run dev` inicia Vite y la fake API local. La bandeja de Alerting and Risk Evaluation está en `/alerts`. Usa mediciones y perfiles de riesgo de demostración; permite consultar alertas y registrar su atención. La fake API conserva los cambios durante la ejecución del servidor y los reinicia al detenerlo. Su contrato está en `docs/alerting-api-contract.md`.
 
 ```bash

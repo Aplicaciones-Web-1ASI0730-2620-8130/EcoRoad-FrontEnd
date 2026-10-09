@@ -4,6 +4,13 @@ export function sendJson(response, status, body) {
 }
 
 export async function readJson(request) {
+  // Vercel's Node runtime may parse the body before invoking the function.
+  if (request.body !== undefined && request.body !== null) {
+    if (typeof request.body === 'object') return request.body
+    try { return JSON.parse(request.body) } catch {
+      throw Object.assign(new Error('JSON inválido.'), { status: 400 })
+    }
+  }
   let raw = ''
   for await (const chunk of request) {
     raw += chunk
