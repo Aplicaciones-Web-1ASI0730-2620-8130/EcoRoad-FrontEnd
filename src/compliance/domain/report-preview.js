@@ -18,7 +18,7 @@ export function validateReportCriteria(criteria, projects, today = new Date().to
   if (!isoDate(criteria.to)) errors.to = 'Indica una fecha de fin válida.'
   if (isoDate(criteria.from) && isoDate(criteria.to) && criteria.from > criteria.to) errors.to = 'La fecha de fin debe ser posterior al inicio.'
   if (isoDate(criteria.to) && criteria.to > today) errors.to = 'El periodo no puede terminar en el futuro.'
-  if (!criteria.sections?.some((section) => section === 'indicators' || section === 'alerts')) errors.sections = 'Selecciona al menos un contenido disponible.'
+  if (!Array.isArray(criteria.sections) || !criteria.sections.some((section) => section === 'indicators' || section === 'alerts')) errors.sections = 'Selecciona al menos un contenido disponible.'
   else if (criteria.sections.some((section) => !['indicators', 'alerts'].includes(section))) errors.sections = 'Hay fuentes pendientes de integración en la selección.'
   return errors
 }
@@ -46,6 +46,7 @@ export function buildReportPreview(criteria, { projects, readings = [], alerts =
     readingCount: scopedReadings.length,
     alertCount: scopedAlerts.length,
     criticalAlertCount: scopedAlerts.filter((item) => item.risk === 'critical').length,
+    acknowledgedAlertCount: scopedAlerts.filter((item) => item.status === 'acknowledged').length,
     incidentCount: null,
     evidenceCount: null,
     sourceAvailability: { indicators: true, alerts: true, incidents: false, evidence: false },
