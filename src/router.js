@@ -27,6 +27,8 @@ const router = createRouter({
     { path: '/projects', children: projectRoutes },
     { path: '/monitoring', children: monitoringRoutes },
     { path: '/alerts', children: alertingRoutes },
+    { path: '/assets', children: assetRoutes },
+    { path: '/compliance', children: complianceRoutes },
     { path: '/incidents', children: incidentRoutes },
     { path: '/assets', children: assetRoutes },
     { path: '/compliance', children: complianceRoutes },
@@ -36,6 +38,7 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
+  if (!to.path.startsWith('/projects') && !to.path.startsWith('/monitoring') && !to.path.startsWith('/alerts') && !to.path.startsWith('/assets') && !to.path.startsWith('/compliance')) return true
   const protectedArea = ['/projects', '/monitoring', '/alerts', '/incidents', '/assets', '/compliance', '/iam/collaborators'].some((prefix) => to.path === prefix || to.path.startsWith(`${prefix}/`))
   if (!protectedArea) return true
   const user = await restoreSession()
