@@ -16,6 +16,7 @@ import './projects.css'
       </RouterLink>
       <nav aria-label="Navegación de proyectos" class="project-nav">
         <RouterLink to="/projects" :class="{ active: $route.name !== 'projects-new' }"><i class="pi pi-map" aria-hidden="true"></i> Proyectos</RouterLink>
+        <RouterLink to="/monitoring"><i class="pi pi-chart-line" aria-hidden="true"></i> Monitoreo</RouterLink>
         <RouterLink to="/projects/new" :class="{ active: $route.name === 'projects-new' }"><i class="pi pi-plus-circle" aria-hidden="true"></i> Nuevo proyecto</RouterLink>
         <span class="project-nav-divider">CUENTA</span>
         <RouterLink to="/commercial/subscription"><i class="pi pi-credit-card" aria-hidden="true"></i> Suscripción</RouterLink>

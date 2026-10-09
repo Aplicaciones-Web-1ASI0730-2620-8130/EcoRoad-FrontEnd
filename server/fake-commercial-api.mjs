@@ -1,5 +1,7 @@
 import { createServer } from 'node:http'
 import { randomUUID } from 'node:crypto'
+import { sendJson as send, readJson } from './http-json.mjs'
+import { createFakeProjectRoutes } from './fake-project-api.mjs'
 
 const planIds = new Set(['base', 'professional', 'enterprise'])
 const companyTypes = new Set(['construction', 'maintenance', 'supervision'])
@@ -8,24 +10,6 @@ function oneYearLater(date) {
   const next = new Date(date)
   next.setFullYear(next.getFullYear() + 1)
   return next.toISOString()
-}
-
-function send(response, status, body) {
-  response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' })
-  response.end(JSON.stringify(body))
-}
-
-async function readJson(request) {
-  let raw = ''
-  for await (const chunk of request) {
-    raw += chunk
-    if (raw.length > 1_000_000) throw Object.assign(new Error('Solicitud demasiado grande.'), { status: 413 })
-  }
-  try {
-    return raw ? JSON.parse(raw) : {}
-  } catch {
-    throw Object.assign(new Error('JSON inválido.'), { status: 400 })
-  }
 }
 
 export function createFakeCommercialApi({ includeExample = true } = {}) {
@@ -53,11 +37,16 @@ export function createFakeCommercialApi({ includeExample = true } = {}) {
     })
   }
 
+  const handleProjects = createFakeProjectRoutes({ subscriptions, includeExample })
+
   const server = createServer(async (request, response) => {
     try {
       const path = new URL(request.url, 'http://localhost').pathname
       if (path === '/api/health' && request.method === 'GET') {
         return send(response, 200, { status: 'ok', service: 'fake-commercial-api' })
+      }
+      if (path === '/api/projects' || path.startsWith('/api/projects/')) {
+        return await handleProjects(request, response, path)
       }
       if (path === '/api/company-accounts' && request.method === 'POST') {
         const input = await readJson(request)
@@ -137,4 +126,3 @@ export function createFakeCommercialApi({ includeExample = true } = {}) {
 
   return server
 }
-

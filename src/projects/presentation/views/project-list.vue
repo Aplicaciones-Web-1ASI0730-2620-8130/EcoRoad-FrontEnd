@@ -1,15 +1,17 @@
 <script setup>
-import { computed, reactive } from 'vue'
+import { computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
+import Message from 'primevue/message'
 import Tag from 'primevue/tag'
 import ProjectShell from '../components/project-shell.vue'
 import { ENVIRONMENTAL_STATUSES, PROJECT_TYPES } from '../../domain/road-project.js'
 import { useProjects } from '../../application/use-projects.js'
 
 const router = useRouter()
-const { counts, filterProjects } = useProjects()
+const { counts, filterProjects, loadProjects, loading, error } = useProjects()
+onMounted(loadProjects)
 const filters = reactive({ search: '', status: 'all', type: 'all' })
 const filteredProjects = computed(() => filterProjects(filters))
 const typeLabel = (type) => PROJECT_TYPES.find((item) => item.value === type)?.label || type
@@ -40,6 +42,9 @@ function clearFilters() {
       <div class="project-stat"><span>CRÍTICOS</span><strong class="stat-danger">{{ counts.critical }}</strong><small>Requieren atención prioritaria</small></div>
     </div>
 
+    <Message v-if="error" severity="error" :closable="false">{{ error }} <button type="button" class="project-retry" @click="loadProjects">Reintentar</button></Message>
+    <Message v-else-if="loading" severity="info" :closable="false">Cargando proyectos...</Message>
+
     <section class="project-panel filters-panel" aria-label="Filtros de proyectos">
       <label class="project-search"><i class="pi pi-search" aria-hidden="true"></i><InputText v-model="filters.search" placeholder="Buscar por nombre, código o ubicación" aria-label="Buscar proyectos" /></label>
       <select v-model="filters.status" aria-label="Filtrar por estado ambiental">
@@ -54,7 +59,7 @@ function clearFilters() {
     </section>
 
     <section class="project-panel project-list-panel">
-      <div class="project-list-heading"><strong>{{ filteredProjects.length }} de {{ counts.total }} proyectos</strong><small>Datos de ejemplo para la interfaz</small></div>
+      <div class="project-list-heading"><strong>{{ filteredProjects.length }} de {{ counts.total }} proyectos</strong><small>Datos de la fake API local</small></div>
       <div class="project-table-scroll">
         <table class="project-table">
           <thead><tr><th>PROYECTO / CÓDIGO</th><th>UBICACIÓN</th><th>TIPO DE OBRA</th><th>ESTADO AMBIENTAL</th><th>SENSORES</th><th>ALERTAS</th><th>INCIDENTES</th><th>ACCIÓN</th></tr></thead>
@@ -76,4 +81,3 @@ function clearFilters() {
     </section>
   </ProjectShell>
 </template>
-
