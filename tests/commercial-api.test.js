@@ -4,6 +4,7 @@ import {
   CommercialApiError,
   createCommercialApiRepository,
 } from '../src/commercial/infrastructure/commercial-api-repository.js'
+import { createFakeCommercialApi } from '../server/fake-commercial-api.mjs'
 
 function jsonResponse(body, status = 200) {
   return {
@@ -62,3 +63,42 @@ test('preserves backend error status and code for UI decisions', async () => {
   )
 })
 
+test('fake API completes registration, plan, activation and renewal through HTTP', async () => {
+  const server = createFakeCommercialApi({ includeExample: false })
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+  try {
+    const repository = createCommercialApiRepository({
+      baseUrl: `http://127.0.0.1:${server.address().port}/api/`,
+    })
+    const company = await repository.registerCompany({
+      companyName: 'Eco Vial',
+      ruc: '20601234567',
+      companyType: 'construction',
+      adminName: 'Ana Torres',
+      adminEmail: 'ana@empresa.pe',
+      acceptedTerms: true,
+      planId: 'professional',
+    })
+    assert.equal((await repository.getSubscription(company.id)).status, 'pending')
+    const selected = await repository.selectPlan(company.id, 'professional')
+    assert.equal(selected.planId, 'professional')
+    const activated = await repository.requestActivation(company.id)
+    assert.equal(activated.subscription.status, 'active')
+    assert.equal(activated.simulated, true)
+    const renewed = await repository.requestRenewal(company.id)
+    assert.ok(new Date(renewed.subscription.expiresAt) > new Date(activated.subscription.expiresAt))
+    await assert.rejects(
+      repository.registerCompany({
+        companyName: 'Duplicada',
+        ruc: '20601234567',
+        companyType: 'construction',
+        adminName: 'Otra Persona',
+        adminEmail: 'otra@empresa.pe',
+        acceptedTerms: true,
+      }),
+      (error) => error.status === 409 && error.code === 'DUPLICATE_RUC',
+    )
+  } finally {
+    await new Promise((resolve) => server.close(resolve))
+  }
+})

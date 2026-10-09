@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -23,8 +23,10 @@ const form = reactive({
 })
 const errors = ref({})
 
-function submit() {
-  errors.value = commercial.registerCompany(form)
+onMounted(() => commercial.refresh())
+
+async function submit() {
+  errors.value = await commercial.registerCompany(form)
   if (Object.keys(errors.value).length === 0) router.push({ name: 'commercial-subscription' })
 }
 </script>
@@ -38,11 +40,11 @@ function submit() {
       <p class="page-intro">Habilita el monitoreo ambiental y la auditoría de tus proyectos de construcción o mantenimiento vial.</p>
 
       <Message v-if="commercial.company.value" severity="info" :closable="false" class="notice">
-        Ya hay una empresa registrada en este navegador de demostración.
+        Ya hay una empresa seleccionada en esta demostración.
         <RouterLink to="/commercial/subscription">Ver suscripción</RouterLink>
       </Message>
       <Message severity="warn" :closable="false" class="notice">
-        Modo demo local: no se procesan pagos ni se crea una cuenta real.
+        Fake API local: los datos son de ejemplo y no se procesan pagos reales.
       </Message>
 
       <form class="registration-form" novalidate @submit.prevent="submit">
@@ -131,10 +133,9 @@ function submit() {
 
         <div class="form-actions">
           <span>El acceso del administrador se configurará en el contexto de identidad.</span>
-          <Button type="submit" label="Crear cuenta empresarial" icon="pi pi-arrow-right" icon-pos="right" :disabled="!!commercial.company.value" />
+          <Button type="submit" label="Crear cuenta empresarial" icon="pi pi-arrow-right" icon-pos="right" :loading="commercial.loading.value" :disabled="!!commercial.company.value" />
         </div>
       </form>
     </div>
   </main>
 </template>
-
