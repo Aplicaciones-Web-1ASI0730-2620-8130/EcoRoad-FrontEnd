@@ -50,3 +50,21 @@
 .iam-empty { padding: 35px 14px; color: #8295a5; font-size: 12px; text-align: center; }
 @media (max-width: 1080px) { .iam-layout { grid-template-columns: 1fr; } }
 @media (max-width: 720px) { .iam-summary { grid-template-columns: 1fr; } .iam-invite-grid { grid-template-columns: 1fr; } .iam-access-actions { align-items: start; flex-direction: column; } }
+.iam-login-page { min-height: 100vh; background: #f7faf9; color: #253f4b; }
+.iam-login-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; background: white; border-bottom: 1px solid #e0e9e5; }
+.iam-login-header a { display: flex; align-items: center; gap: 10px; color: #06543d; text-decoration: none; font-size: 20px; }
+.iam-login-header > span { color: #7a918b; font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+.iam-login-mark { display: grid; place-items: center; width: 35px; height: 35px; border-radius: 50%; background: #007e5c; color: white; }
+.iam-login-mark.large { width: 70px; height: 70px; margin: 0 auto 15px; font-size: 30px; }
+.iam-login-main { display: grid; place-items: center; padding: 60px 20px; }
+.iam-login-card { width: min(100%, 460px); padding: 38px 42px; border: 1px solid #e4ece8; border-radius: 12px; background: white; box-shadow: 0 7px 26px #163d2a0b; text-align: center; }
+.iam-login-card h1 { margin: 0; font-size: 25px; }
+.iam-login-card > p { color: #667e7a; font-size: 13px; }
+.iam-login-card form { display: grid; gap: 9px; margin-top: 28px; text-align: left; }
+.iam-login-card label { margin-top: 9px; font-size: 12px; font-weight: 700; }
+.iam-login-card input { width: 100%; height: 42px; padding: 0 12px; border: 1px solid #cbdad4; border-radius: 6px; font: inherit; }
+.iam-password { position: relative; }.iam-password input { padding-right: 42px; }.iam-password button { position: absolute; right: 5px; top: 4px; width: 35px; height: 34px; border: 0; background: transparent; cursor: pointer; }
+.iam-login-card .p-button { justify-content: center; margin-top: 16px; background: #008b65; border-color: #008b65; }
+.iam-demo-credentials { display: grid; gap: 4px; margin-top: 25px; padding: 13px; border-radius: 7px; background: #eef8f3; font-size: 12px; text-align: left; }.iam-demo-credentials small { margin-top: 5px; color: #668179; }
+.iam-forbidden { max-width: 480px; margin: 15vh auto; padding: 30px; text-align: center; }.iam-forbidden > i { color: #b66d00; font-size: 40px; }.iam-forbidden a { color: #007e5c; }
+.iam-signout { margin-left: 16px; border: 0; background: transparent; color: #006e52; font: inherit; cursor: pointer; }

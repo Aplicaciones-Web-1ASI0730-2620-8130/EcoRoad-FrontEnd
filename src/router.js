@@ -9,6 +9,7 @@ import iamRoutes from './iam/presentation/iam-routes.js'
 import { createCommercialApiRepository } from './commercial/infrastructure/commercial-api-repository.js'
 import { canAccessOperationalModules } from './commercial/domain/commercial-model.js'
 import { getDemoCompanyId } from './projects/infrastructure/demo-company.js'
+import { restoreSession } from './iam/application/iam-session.js'
 
 const commercialApi = createCommercialApiRepository({
   baseUrl: import.meta.env.VITE_COMMERCIAL_API_URL || new URL('/api/', window.location.origin).href,
@@ -30,7 +31,16 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  if (!to.path.startsWith('/projects') && !to.path.startsWith('/monitoring') && !to.path.startsWith('/alerts') && !to.path.startsWith('/assets') && !to.path.startsWith('/compliance') && !to.path.startsWith('/iam')) return true
+  const protectedArea = ['/projects', '/monitoring', '/alerts', '/assets', '/compliance', '/iam/collaborators'].some((prefix) => to.path === prefix || to.path.startsWith(`${prefix}/`))
+  if (!protectedArea) return true
+  const user = await restoreSession()
+  if (!user || user.companyId !== getDemoCompanyId()) return { path: '/iam/login', query: { redirect: to.fullPath } }
+  const required = to.path.startsWith('/iam/') ? 'manage_users'
+    : to.path.startsWith('/compliance') ? 'generate_reports'
+      : to.path.startsWith('/assets') ? 'consult_sensors'
+        : to.path.startsWith('/alerts') ? 'consult_alerts'
+          : to.path.startsWith('/monitoring') ? 'consult_indicators' : 'view_projects'
+  if (!user.permissions.includes(required)) return { path: '/iam/forbidden' }
   try {
     const subscription = await commercialApi.getSubscription(getDemoCompanyId())
     if (canAccessOperationalModules(subscription)) return true
