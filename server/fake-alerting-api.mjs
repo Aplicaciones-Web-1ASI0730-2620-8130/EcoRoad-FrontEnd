@@ -7,7 +7,7 @@ export function createFakeAlertingRoutes({ subscriptions, includeExample = true 
   const alertsByCompany = new Map()
   if (includeExample) alertsByCompany.set('demo-company', createDemoAlerts())
 
-  return async (request, response, path) => {
+  const handleAlertingRequest = async (request, response, path) => {
     const companyId = request.headers['x-demo-company-id']
     if (!companyId || Array.isArray(companyId)) return sendJson(response, 400, { code: 'COMPANY_REQUIRED', message: 'Selecciona una empresa.' })
     if (!canAccessOperationalModules(subscriptions.get(companyId))) {
@@ -46,4 +46,6 @@ export function createFakeAlertingRoutes({ subscriptions, includeExample = true 
     if (!path.endsWith('/acknowledgments') && request.method === 'GET') return sendJson(response, 200, companyAlerts[index])
     return sendJson(response, 405, { code: 'METHOD_NOT_ALLOWED', message: 'Operación de alertas no permitida.' })
   }
+  handleAlertingRequest.listAlerts = (companyId) => [...(alertsByCompany.get(companyId) || [])]
+  return handleAlertingRequest
 }

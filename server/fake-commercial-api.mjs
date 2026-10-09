@@ -5,6 +5,7 @@ import { createFakeProjectRoutes } from './fake-project-api.mjs'
 import { createFakeMonitoringRoutes } from './fake-monitoring-api.mjs'
 import { createFakeAlertingRoutes } from './fake-alerting-api.mjs'
 import { createFakeAssetRoutes } from './fake-asset-api.mjs'
+import { createFakeComplianceRoutes } from './fake-compliance-api.mjs'
 
 const planIds = new Set(['base', 'professional', 'enterprise'])
 const companyTypes = new Set(['construction', 'maintenance', 'supervision'])
@@ -44,6 +45,7 @@ export function createFakeCommercialApi({ includeExample = true } = {}) {
   const handleMonitoring = createFakeMonitoringRoutes({ subscriptions, includeExample })
   const handleAlerting = createFakeAlertingRoutes({ subscriptions, includeExample })
   const handleAssets = createFakeAssetRoutes({ subscriptions, projects: handleProjects, includeExample })
+  const handleCompliance = createFakeComplianceRoutes({ subscriptions, projects: handleProjects, monitoring: handleMonitoring, alerting: handleAlerting })
 
   const server = createServer(async (request, response) => {
     try {
@@ -62,6 +64,9 @@ export function createFakeCommercialApi({ includeExample = true } = {}) {
       }
       if (path === '/api/assets' || path.startsWith('/api/assets/')) {
         return await handleAssets(request, response, path)
+      }
+      if (path === '/api/compliance' || path.startsWith('/api/compliance/')) {
+        return await handleCompliance(request, response, path)
       }
       if (path === '/api/company-accounts' && request.method === 'POST') {
         const input = await readJson(request)
