@@ -32,6 +32,18 @@ const router = createRouter({
   ],
 })
 
+const chunkReloadKey = 'ecoroad:chunk-reload-target'
+
+router.onError((error, to) => {
+  if (!/failed to fetch dynamically imported module|importing a module script failed|error loading dynamically imported module/i.test(error?.message || '')) return
+
+  const target = to.fullPath
+  if (sessionStorage.getItem(chunkReloadKey) === target) return
+
+  sessionStorage.setItem(chunkReloadKey, target)
+  window.location.assign(target)
+})
+
 router.beforeEach(async (to) => {
   const protectedArea = ['/projects', '/monitoring', '/alerts', '/incidents', '/assets', '/compliance', '/iam/collaborators'].some((prefix) => to.path === prefix || to.path.startsWith(`${prefix}/`))
   if (!protectedArea) return true
@@ -53,7 +65,8 @@ router.beforeEach(async (to) => {
   }
 })
 
-router.afterEach((to) => {
+router.afterEach((to, _from, failure) => {
+  if (!failure && sessionStorage.getItem(chunkReloadKey) === to.fullPath) sessionStorage.removeItem(chunkReloadKey)
   document.title = `${to.meta.title || 'Proyectos viales'} | EcoRoad`
 })
 
