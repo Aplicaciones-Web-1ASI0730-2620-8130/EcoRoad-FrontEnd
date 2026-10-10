@@ -4,7 +4,6 @@ import { currentUser, signOut } from '../../../iam/application/iam-session.js'
 import './projects.css'
 const router = useRouter()
 async function leave() { await signOut(); await router.push('/iam/login') }
-import './projects.css'
 </script>
 
 <template>
@@ -22,7 +21,6 @@ import './projects.css'
       <nav aria-label="Navegación de proyectos" class="project-nav">
         <RouterLink to="/projects" :class="{ active: $route.name !== 'projects-new' }"><i class="pi pi-map" aria-hidden="true"></i> Proyectos</RouterLink>
         <RouterLink v-if="currentUser?.permissions?.includes('consult_indicators')" to="/monitoring"><i class="pi pi-chart-line" aria-hidden="true"></i> Monitoreo</RouterLink>
-        <RouterLink to="/monitoring"><i class="pi pi-chart-line" aria-hidden="true"></i> Monitoreo</RouterLink>
         <RouterLink to="/projects/new" :class="{ active: $route.name === 'projects-new' }"><i class="pi pi-plus-circle" aria-hidden="true"></i> Nuevo proyecto</RouterLink>
         <span class="project-nav-divider">CUENTA</span>
         <RouterLink to="/commercial/subscription"><i class="pi pi-credit-card" aria-hidden="true"></i> Suscripción</RouterLink>
@@ -33,7 +31,6 @@ import './projects.css'
       <header class="project-topbar">
         <div class="project-breadcrumb"><span>EcoRoad</span><i class="pi pi-angle-right" aria-hidden="true"></i><strong><slot name="breadcrumb">Proyectos</slot></strong></div>
         <div class="project-user"><span class="project-avatar"><i class="pi pi-user" aria-hidden="true"></i></span><span><strong>{{ currentUser?.name || 'Equipo EcoRoad' }}</strong><small>{{ currentUser?.email || 'Entorno de demostración' }}</small></span><button type="button" class="iam-signout" @click="leave">Salir</button></div>
-        <div class="project-user"><span class="project-avatar"><i class="pi pi-user" aria-hidden="true"></i></span><span><strong>Equipo EcoRoad</strong><small>Entorno de demostración</small></span></div>
       </header>
       <main class="project-content"><slot /></main>
     </div>
