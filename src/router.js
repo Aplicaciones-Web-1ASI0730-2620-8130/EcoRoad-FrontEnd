@@ -8,7 +8,6 @@ import complianceRoutes from './compliance/presentation/compliance-routes.js'
 import iamRoutes from './iam/presentation/iam-routes.js'
 import { createCommercialApiRepository } from './commercial/infrastructure/commercial-api-repository.js'
 import { canAccessOperationalModules } from './commercial/domain/commercial-model.js'
-import { getDemoCompanyId } from './projects/infrastructure/demo-company.js'
 import { restoreSession } from './iam/application/iam-session.js'
 
 const commercialApi = createCommercialApiRepository({
@@ -34,7 +33,7 @@ router.beforeEach(async (to) => {
   const protectedArea = ['/projects', '/monitoring', '/alerts', '/assets', '/compliance', '/iam/collaborators'].some((prefix) => to.path === prefix || to.path.startsWith(`${prefix}/`))
   if (!protectedArea) return true
   const user = await restoreSession()
-  if (!user || user.companyId !== getDemoCompanyId()) return { path: '/iam/login', query: { redirect: to.fullPath } }
+  if (!user) return { path: '/iam/login', query: { redirect: to.fullPath } }
   const required = to.path.startsWith('/iam/') ? 'manage_users'
     : to.path.startsWith('/compliance') ? 'generate_reports'
       : to.path.startsWith('/assets') ? 'consult_sensors'
@@ -42,7 +41,7 @@ router.beforeEach(async (to) => {
           : to.path.startsWith('/monitoring') ? 'consult_indicators' : 'view_projects'
   if (!user.permissions.includes(required)) return { path: '/iam/forbidden' }
   try {
-    const subscription = await commercialApi.getSubscription(getDemoCompanyId())
+    const subscription = await commercialApi.getSubscription(user.companyId)
     if (canAccessOperationalModules(subscription)) return true
     return { path: '/commercial/subscription', query: { access: 'required' } }
   } catch {
