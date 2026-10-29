@@ -1,8 +1,8 @@
 import { computed, ref } from 'vue'
 import { createCommercialApiRepository } from '../infrastructure/commercial-api-repository.js'
 import { PLANS, canAccessOperationalModules, validateCompanyRegistration } from '../domain/commercial-model.js'
+import { SELECTED_COMPANY_KEY } from '../../projects/infrastructure/demo-company.js'
 
-const SELECTED_COMPANY_KEY = 'ecoroad.commercial.selected-company'
 const api = createCommercialApiRepository({
   baseUrl: import.meta.env.VITE_COMMERCIAL_API_URL || new URL('/api/', window.location.origin).href,
 })
