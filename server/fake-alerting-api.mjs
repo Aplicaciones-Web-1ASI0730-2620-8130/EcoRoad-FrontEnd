@@ -8,7 +8,6 @@ export function createFakeAlertingRoutes({ subscriptions, includeExample = true 
   if (includeExample) alertsByCompany.set('demo-company', createDemoAlerts())
 
   const handleAlertingRequest = async (request, response, path) => {
-  return async (request, response, path) => {
     const companyId = request.headers['x-demo-company-id']
     if (!companyId || Array.isArray(companyId)) return sendJson(response, 400, { code: 'COMPANY_REQUIRED', message: 'Selecciona una empresa.' })
     if (!canAccessOperationalModules(subscriptions.get(companyId))) {
