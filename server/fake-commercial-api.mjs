@@ -18,7 +18,7 @@ function oneYearLater(date) {
   return next.toISOString()
 }
 
-export function createFakeCommercialApi({ includeExample = true } = {}) {
+export function createFakeCommercialApi({ includeExample = true, portableDemoSessions = false } = {}) {
   const accounts = new Map()
   const subscriptions = new Map()
   const now = new Date().toISOString()
@@ -48,7 +48,7 @@ export function createFakeCommercialApi({ includeExample = true } = {}) {
   const handleAlerting = createFakeAlertingRoutes({ subscriptions, includeExample })
   const handleAssets = createFakeAssetRoutes({ subscriptions, projects: handleProjects, includeExample })
   const handleCompliance = createFakeComplianceRoutes({ subscriptions, projects: handleProjects, monitoring: handleMonitoring, alerting: handleAlerting })
-  const iam = createFakeIamRoutes({ includeExample })
+  const iam = createFakeIamRoutes({ includeExample, portableDemoSessions })
   const handleIncidents = createFakeIncidentRoutes({ subscriptions, alerting: handleAlerting, iam, includeExample })
 
   const server = createServer(async (request, response) => {

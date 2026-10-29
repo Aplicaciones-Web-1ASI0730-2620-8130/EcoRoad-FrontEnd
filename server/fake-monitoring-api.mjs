@@ -7,7 +7,6 @@ export function createFakeMonitoringRoutes({ subscriptions, includeExample = tru
   const projects = includeExample ? MONITORING_PROJECTS : []
   const readings = includeExample ? DEMO_READINGS : []
   const handleMonitoringRequest = async (request, response, path) => {
-  return async (request, response, path) => {
     const companyId = request.headers['x-demo-company-id']
     if (!companyId || Array.isArray(companyId)) return sendJson(response, 400, { code: 'COMPANY_REQUIRED', message: 'Selecciona una empresa.' })
     if (!canAccessOperationalModules(subscriptions.get(companyId))) return sendJson(response, 403, { code: 'SUBSCRIPTION_REQUIRED', message: 'La empresa necesita una suscripción activa para consultar monitoreo.' })

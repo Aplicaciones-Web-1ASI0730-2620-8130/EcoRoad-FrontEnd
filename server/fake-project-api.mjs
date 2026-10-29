@@ -17,7 +17,6 @@ export function createFakeProjectRoutes({ subscriptions, includeExample = true }
   let nextCode = PROJECT_FIXTURES.length + 1
 
   const handleProjectRequest = async (request, response, path) => {
-  return async (request, response, path) => {
     const companyId = request.headers['x-demo-company-id']
     if (!companyId || Array.isArray(companyId)) {
       return sendJson(response, 400, { code: 'COMPANY_REQUIRED', message: 'Selecciona una empresa.' })
