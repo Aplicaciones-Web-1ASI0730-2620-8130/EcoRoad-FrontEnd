@@ -1,0 +1,7 @@
+# Incident and Remediation Management
+
+Este contexto coordina un expediente ambiental vinculado a una alerta: apertura, asignación de responsable, acciones correctivas, evidencia, resolución y cierre formal. Alerting conserva la decisión de riesgo y la alerta original; Incident and Remediation Management guarda su propio expediente y referencia el ID de la alerta.
+
+La ruta `/incidents` muestra un tablero por estado y un expediente lateral, inspirado en los mockups del proyecto. Incluye filtros por proyecto, estado y texto. El actor puede ejecutar solo comandos habilitados por sus permisos de IAM: `manage_incidents` para abrir, asignar, resolver y cerrar; `corrective_actions` para registrar medidas; `field_evidence` para registrar evidencias. La fake API valida la sesión, la empresa seleccionada, la suscripción activa y cada transición. Un caso no se resuelve sin acción y evidencia.
+
+La evidencia puede contener una nota y un PNG, JPG o PDF opcional de hasta 2 MB. La fake API guarda el archivo en memoria y calcula su SHA-256; el expediente permite descargarlo. Los tres casos iniciales muestran los estados pendiente, en progreso y resuelto. La alerta `ALR-019` queda disponible para abrir un caso nuevo. Los cambios sobreviven a la recarga de la página y se reinician al detener el servidor. Esta fake API y sus evidencias son datos de demostración, sin almacenamiento duradero ni firma digital institucional.
