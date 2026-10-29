@@ -1,5 +1,4 @@
 <script setup>
-import OperationalNav from '../../../monitoring/presentation/components/operational-nav.vue'
 import './projects.css'
 </script>
 
@@ -15,12 +14,18 @@ import './projects.css'
         </span>
         <span><strong>EcoRoad</strong><small>INFRAESTRUCTURA Y ENTORNO</small></span>
       </RouterLink>
-      <OperationalNav nav-class="project-nav" divider-class="project-nav-divider" />
+      <nav aria-label="Navegación de proyectos" class="project-nav">
+        <RouterLink to="/projects" :class="{ active: $route.name !== 'projects-new' }"><i class="pi pi-map" aria-hidden="true"></i> Proyectos</RouterLink>
+        <RouterLink to="/monitoring"><i class="pi pi-chart-line" aria-hidden="true"></i> Monitoreo</RouterLink>
+        <RouterLink to="/projects/new" :class="{ active: $route.name === 'projects-new' }"><i class="pi pi-plus-circle" aria-hidden="true"></i> Nuevo proyecto</RouterLink>
+        <span class="project-nav-divider">CUENTA</span>
+        <RouterLink to="/commercial/subscription"><i class="pi pi-credit-card" aria-hidden="true"></i> Suscripción</RouterLink>
+      </nav>
       <div class="project-sidebar-bottom"><i class="pi pi-globe" aria-hidden="true"></i> EcoRoad · Demo</div>
     </aside>
     <div class="project-workspace">
       <header class="project-topbar">
-        <div class="project-breadcrumb"><span>EcoRoad</span><i class="pi pi-angle-right" aria-hidden="true"></i><strong><slot name="breadcrumb">{{ $route.meta.title || 'Proyectos viales' }}</slot></strong></div>
+        <div class="project-breadcrumb"><span>EcoRoad</span><i class="pi pi-angle-right" aria-hidden="true"></i><strong><slot name="breadcrumb">Proyectos</slot></strong></div>
         <div class="project-user"><span class="project-avatar"><i class="pi pi-user" aria-hidden="true"></i></span><span><strong>Equipo EcoRoad</strong><small>Entorno de demostración</small></span></div>
       </header>
       <main class="project-content"><slot /></main>
