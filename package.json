@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "description": "EcoRoad environmental monitoring SPA",
   "scripts": {
-    "dev": "node server/dev.mjs",
+    "dev": "vite --configLoader native",
     "api:fake": "node server/start.mjs",
     "build": "vite build --configLoader native",
     "preview": "vite preview",
-    "test": "node --test tests/*.test.js",
+    "test": "node --test --test-isolation=none tests/*.test.js",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "dev:fake": "node server/dev.mjs"
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,7 @@
 import { createServer as createViteServer } from 'vite'
 import { createFakeCommercialApi } from './fake-commercial-api.mjs'
 
+process.env.API_PROXY_TARGET ||= 'http://127.0.0.1:3001'
 const port = Number(process.env.FAKE_API_PORT || 3001)
 const api = createFakeCommercialApi()
 await new Promise((resolve, reject) => {

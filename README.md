@@ -1,3 +1,12 @@
+# EcoRoad Frontend
+
+## Desarrollo con el backend real
+
+Inicia EcoRoad Back-End en `http://localhost:5080` y ejecuta `npm run dev` en este proyecto. Vite envía `/api` al backend. Si usa otro puerto, configura `API_PROXY_TARGET` en `.env.local` (consulta `.env.example`).
+
+Para trabajar con la API simulada ejecuta `npm run dev:fake`. Las pantallas todavía tienen contratos de demostración que se adaptarán al backend real en los siguientes cambios.
+
+## Documentación de los módulos
 # EcoRoad FrontEnd
 
 SPA de EcoRoad construida con **Vue 3**, **Vite** y **PrimeVue** para la gestión ambiental de proyectos viales. El código se organiza por **bounded contexts** bajo `src/` (`domain/`, `application/`, `infrastructure/`, `presentation/`).
