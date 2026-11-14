@@ -4,13 +4,13 @@ import { computed } from 'vue'
 const props = defineProps({
   readings: { type: Array, required: true },
   unit: { type: String, required: true },
-  profile: { type: Object, required: true },
+  profile: { type: Object, default: null },
 })
 
 const plot = computed(() => {
   const values = props.readings.map((reading) => reading.value)
-  const upper = props.profile.kind === 'maximum' ? props.profile.criticalAt : props.profile.maximum
-  const lower = props.profile.kind === 'range' ? props.profile.minimum : 0
+  const upper = props.profile ? (props.profile.kind === 'maximum' ? props.profile.criticalAt : props.profile.maximum) : Math.max(...values)
+  const lower = props.profile?.kind === 'range' ? props.profile.minimum : 0
   const min = Math.min(lower, ...values)
   const max = Math.max(upper, ...values)
   const padding = Math.max((max - min) * .12, 1)
@@ -33,8 +33,8 @@ const plot = computed(() => {
     <svg viewBox="0 0 800 280" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
       <line x1="58" y1="40" x2="58" y2="225" class="monitoring-chart-axis" />
       <line x1="58" y1="225" x2="752" y2="225" class="monitoring-chart-axis" />
-      <line x1="58" :y1="plot.limitY" x2="752" :y2="plot.limitY" class="monitoring-chart-limit" />
-      <text x="65" :y="Math.max(30, plot.limitY - 8)" class="monitoring-chart-limit-label">Umbral demo: {{ plot.limit }} {{ unit }}</text>
+      <line v-if="profile" x1="58" :y1="plot.limitY" x2="752" :y2="plot.limitY" class="monitoring-chart-limit" />
+      <text v-if="profile" x="65" :y="Math.max(30, plot.limitY - 8)" class="monitoring-chart-limit-label">Umbral demo: {{ plot.limit }} {{ unit }}</text>
       <text x="12" y="45" class="monitoring-chart-label">{{ plot.yMax }}</text>
       <text x="22" y="225" class="monitoring-chart-label">{{ plot.yMin }}</text>
       <polyline v-if="plot.points.length > 1" :points="plot.points.map((point) => `${point.x},${point.y}`).join(' ')" class="monitoring-chart-line" />

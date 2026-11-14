@@ -1,6 +1,8 @@
 import { computed, ref } from 'vue'
 import { canReport, summarizeAssets } from '../domain/monitoring-asset.js'
 import { createAssetApiRepository } from '../infrastructure/asset-api-repository.js'
+import { createAssetBackendRepository } from '../infrastructure/asset-backend-repository.js'
+import { useFakeApi } from '../../shared/infrastructure/api-mode.js'
 import { getDemoCompanyId } from '../../projects/infrastructure/demo-company.js'
 
 export function createAssetStore(api) {
@@ -17,7 +19,7 @@ export function createAssetStore(api) {
     error.value = ''
     fieldErrors.value = {}
     try { return await action() } catch (cause) {
-      error.value = cause instanceof TypeError ? 'No se pudo conectar con la fake API. Inicia npm run dev.' : cause.message || 'No se pudo completar la operación.'
+      error.value = cause instanceof TypeError ? 'No se pudo conectar con la API. Comprueba que el backend esté en ejecución.' : cause.message || 'No se pudo completar la operación.'
       fieldErrors.value = cause.errors || {}
       return null
     } finally { loading.value = false }
@@ -68,7 +70,7 @@ export function createAssetStore(api) {
   return { projects, points, sensors, loading, error, fieldErrors, summary, canReport, loadAll, savePoint, deletePoint, registerSensor, changeSensor }
 }
 
-const defaultStore = typeof window === 'undefined' ? null : createAssetStore(createAssetApiRepository({
+const defaultStore = typeof window === 'undefined' ? null : createAssetStore((useFakeApi ? createAssetApiRepository : createAssetBackendRepository)({
   baseUrl: import.meta.env?.VITE_ASSET_API_URL || new URL('/api/', window.location.origin).href,
   getCompanyId: getDemoCompanyId,
 }))

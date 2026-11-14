@@ -7,6 +7,7 @@ import MonitoringShell from '../../../monitoring/presentation/components/monitor
 import { ASSET_STATUSES, SENSOR_TYPES, canReport, isCalibrationValid, validateMonitoringPoint, validateSensorAsset } from '../../domain/monitoring-asset.js'
 import { parseKilometerPost } from '../../../projects/domain/road-section.js'
 import { useAssets } from '../../application/use-assets.js'
+import { useFakeApi } from '../../../shared/infrastructure/api-mode.js'
 import '../assets.css'
 
 const store = useAssets()
@@ -108,7 +109,7 @@ async function operate(action, value) {
 <template>
   <MonitoringShell>
     <div class="monitoring-heading assets-heading"><div><span class="monitoring-eyebrow">HARDWARE AS A SERVICE · ECO ROAD</span><h1>Sensores y despliegue</h1><p>Administra puntos geolocalizados, equipos de campo, calibración y activación.</p></div><Button label="Registrar sensor" icon="pi pi-plus" @click="sensorFormOpen = !sensorFormOpen" /></div>
-    <Message severity="info" :closable="false" class="monitoring-demo-note">Activos y ubicaciones de demostración. Solo los sensores asignados, calibrados y activos quedan habilitados para reportar.</Message>
+    <Message severity="info" :closable="false" class="monitoring-demo-note">{{ useFakeApi ? 'Activos y ubicaciones de demostración.' : 'Activos y ubicaciones registrados en el backend.' }} Solo los sensores asignados, calibrados y activos quedan habilitados para reportar.</Message>
     <Message v-if="store.error.value" severity="error" :closable="false" class="assets-feedback">{{ store.error.value }} <button class="assets-inline-button" type="button" @click="store.loadAll()">Reintentar</button></Message>
     <Message v-if="feedback" severity="success" :closable="false" class="assets-feedback">{{ feedback }}</Message>
 

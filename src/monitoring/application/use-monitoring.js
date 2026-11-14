@@ -1,6 +1,8 @@
 import { ref } from 'vue'
 import { createMonitoringApiRepository } from '../infrastructure/monitoring-api-repository.js'
 import { getDemoCompanyId } from '../../projects/infrastructure/demo-company.js'
+import { createMonitoringBackendRepository } from '../infrastructure/monitoring-backend-repository.js'
+import { useFakeApi } from '../../shared/infrastructure/api-mode.js'
 
 export function createMonitoringStore(api) {
   const projects = ref([])
@@ -13,7 +15,7 @@ export function createMonitoringStore(api) {
     loading.value = true
     error.value = ''
     try { return await action() } catch (cause) {
-      error.value = cause instanceof TypeError ? 'No se pudo conectar con la fake API. Inicia npm run dev.' : cause.message || 'Ocurrió un error al consultar monitoreo.'
+      error.value = cause instanceof TypeError ? 'No se pudo conectar con la API. Comprueba que el servidor esté iniciado.' : cause.message || 'Ocurrió un error al consultar monitoreo.'
       return null
     } finally { loading.value = false }
   }
@@ -44,5 +46,5 @@ export function createMonitoringStore(api) {
 }
 
 const baseUrl = import.meta.env.VITE_MONITORING_API_URL || new URL('/api/', window.location.origin).href
-const defaultStore = createMonitoringStore(createMonitoringApiRepository({ baseUrl, getCompanyId: getDemoCompanyId }))
+const defaultStore = createMonitoringStore(useFakeApi ? createMonitoringApiRepository({ baseUrl, getCompanyId: getDemoCompanyId }) : createMonitoringBackendRepository({ baseUrl, getCompanyId: getDemoCompanyId }))
 export function useMonitoring() { return defaultStore }
