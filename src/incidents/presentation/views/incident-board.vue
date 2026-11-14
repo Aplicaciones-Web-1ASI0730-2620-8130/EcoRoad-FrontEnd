@@ -6,6 +6,7 @@ import MonitoringShell from '../../../monitoring/presentation/components/monitor
 import { currentUser } from '../../../iam/application/iam-session.js'
 import { INCIDENT_STATUSES } from '../../domain/incident.js'
 import { useIncidents } from '../../application/use-incidents.js'
+import { useFakeApi } from '../../../shared/infrastructure/api-mode.js'
 import '../incidents.css'
 
 const store = useIncidents()
@@ -29,6 +30,7 @@ const assigneeId = ref('')
 const actionNote = ref('')
 const evidenceNote = ref('')
 const evidenceFile = ref(null)
+const evidenceUrl = ref('')
 const fileInputKey = ref(0)
 const feedback = ref('')
 const availableAlerts = computed(() => store.alerts.value.filter((alert) => !store.incidents.value.some((item) => item.alertId === alert.id)))
@@ -39,7 +41,7 @@ async function submitCreate() {
   if (await store.create(createDraft.alertId, createDraft.description)) {
     createOpen.value = false
     Object.assign(createDraft, { alertId: '', description: '' })
-    feedback.value = 'Incidente registrado en la fake API.'
+    feedback.value = useFakeApi ? 'Incidente registrado en la fake API.' : 'Incidente registrado en el backend.'
   }
 }
 async function assign() {
@@ -49,8 +51,8 @@ async function addAction() {
   if (await store.addAction(selected.value.id, actionNote.value)) { actionNote.value = ''; feedback.value = 'Acción correctiva registrada.' }
 }
 async function addEvidence() {
-  let attachment = null
-  if (evidenceFile.value) {
+  let attachment = useFakeApi ? null : evidenceUrl.value.trim() || null
+  if (useFakeApi && evidenceFile.value) {
     const file = evidenceFile.value
     if (file.size > 2_000_000 || !['image/png', 'image/jpeg', 'application/pdf'].includes(file.type)) {
       store.error.value = 'Adjunta un PNG, JPG o PDF de hasta 2 MB.'
@@ -67,9 +69,14 @@ async function addEvidence() {
   if (await store.addEvidence(selected.value.id, evidenceNote.value, attachment)) {
     evidenceNote.value = ''
     evidenceFile.value = null
+    evidenceUrl.value = ''
     fileInputKey.value += 1
     feedback.value = 'Evidencia de campo registrada.'
   }
+}
+async function changeAction(action, operation) {
+  const success = operation === 'start' ? await store.startAction(selected.value.id, action.id) : await store.executeAction(selected.value.id, action.id)
+  if (success) feedback.value = operation === 'start' ? 'Acción iniciada.' : 'Acción ejecutada.'
 }
 async function downloadEvidence(evidence) {
   const blob = await store.downloadEvidence(selected.value.id, evidence.id)
@@ -90,7 +97,7 @@ async function move(next) {
 <template>
   <MonitoringShell>
     <div class="monitoring-heading incident-heading"><div><span class="monitoring-eyebrow">RESPUESTA OPERATIVA</span><h1>Incidentes y remediación</h1><p>Asigna responsables, registra medidas correctivas y documenta la resolución ambiental.</p></div><Button v-if="can('manage_incidents')" label="Registrar incidente" icon="pi pi-plus" @click="createOpen = !createOpen" /></div>
-    <div class="incident-note" role="note"><i class="pi pi-info-circle" aria-hidden="true"></i> Fake API local: los cambios se conservan al recargar y se reinician al reiniciar el servidor.</div>
+    <div v-if="useFakeApi" class="incident-note" role="note"><i class="pi pi-info-circle" aria-hidden="true"></i> Fake API local: los cambios se conservan al recargar y se reinician al reiniciar el servidor.</div>
     <div v-if="store.error.value" class="incident-error" role="alert">{{ store.error.value }}</div>
     <div v-if="feedback" class="incident-feedback" role="status">{{ feedback }}</div>
 
@@ -104,9 +111,9 @@ async function move(next) {
 
     <aside class="incident-panel incident-detail" aria-label="Detalle del incidente"><template v-if="selected"><div class="incident-panel-header"><div><span class="monitoring-eyebrow">EXPEDIENTE · {{ selected.id }}</span><h2>{{ selected.title }}</h2><p>{{ selected.projectName }} · {{ selected.sectionName }}</p></div><span :class="['incident-status', selected.status]">{{ INCIDENT_STATUSES[selected.status].label }}</span></div><p class="incident-description">{{ selected.description }}</p><dl class="incident-facts"><div><dt>Alerta vinculada</dt><dd>{{ selected.alertId }}</dd></div><div><dt>Riesgo</dt><dd>{{ selected.risk === 'critical' ? 'Crítico' : 'En observación' }}</dd></div><div><dt>Detectado</dt><dd>{{ formatDate(selected.openedAt) }}</dd></div><div><dt>Responsable</dt><dd>{{ selected.assignee?.name || 'Pendiente' }}</dd></div></dl>
       <section v-if="can('manage_incidents') && ['pending', 'in_progress'].includes(selected.status)" class="incident-step"><h3>Asignar responsable</h3><select v-model="assigneeId" aria-label="Colaborador responsable"><option value="">Selecciona un colaborador</option><option v-for="user in store.collaborators.value.filter(item => item.access.status === 'active')" :key="user.id" :value="user.id">{{ user.name }}</option></select><Button label="Asignar y continuar" size="small" :disabled="!assigneeId" @click="assign" /></section>
-      <section class="incident-step"><h3>Acciones correctivas <span>{{ selected.actions.length }}</span></h3><ul v-if="selected.actions.length"><li v-for="action in selected.actions" :key="action.id">{{ action.description }}<small>{{ formatDate(action.recordedAt) }}</small></li></ul><p v-else>Aún no hay medidas registradas.</p><template v-if="can('corrective_actions') && selected.status === 'in_progress'"><textarea v-model="actionNote" rows="2" aria-label="Nueva acción correctiva" placeholder="Ej. Riego de vías o instalación de barreras acústicas"></textarea><Button label="Registrar acción" size="small" outlined :disabled="!actionNote.trim()" @click="addAction" /></template></section>
-      <section class="incident-step"><h3>Evidencias de campo <span>{{ selected.evidence.length }}</span></h3><ul v-if="selected.evidence.length"><li v-for="evidence in selected.evidence" :key="evidence.id">{{ evidence.note }}<small>{{ formatDate(evidence.recordedAt) }}</small><button v-if="evidence.attachment" type="button" class="incident-text-button" :title="`SHA-256: ${evidence.attachment.sha256}`" @click="downloadEvidence(evidence)"><i class="pi pi-download" aria-hidden="true"></i> {{ evidence.attachment.name }}</button></li></ul><p v-else>No hay evidencia documentada.</p><template v-if="can('field_evidence') && selected.status === 'in_progress'"><textarea v-model="evidenceNote" rows="2" aria-label="Nueva evidencia de campo" placeholder="Describe la foto, medición o verificación de campo"></textarea><input :key="fileInputKey" type="file" accept="image/png,image/jpeg,application/pdf" aria-label="Adjuntar evidencia (opcional)" @change="evidenceFile = $event.target.files?.[0] || null" /><small>PNG, JPG o PDF, hasta 2 MB. Se calcula SHA-256 en la fake API.</small><Button label="Registrar evidencia" size="small" outlined :disabled="!evidenceNote.trim() || store.loading.value" @click="addEvidence" /></template></section>
-      <div v-if="can('manage_incidents')" class="incident-close"><Button v-if="selected.status === 'in_progress'" label="Marcar resuelto" :disabled="!selected.actions.length || !selected.evidence.length" @click="move('resolved')" /><Button v-else-if="selected.status === 'resolved'" label="Cerrar incidente" @click="move('closed')" /></div>
+      <section class="incident-step"><h3>Acciones correctivas <span>{{ selected.actions.length }}</span></h3><ul v-if="selected.actions.length"><li v-for="action in selected.actions" :key="action.id">{{ action.description }}<small>{{ formatDate(action.recordedAt) }}<template v-if="!useFakeApi"> · {{ action.status === 'executed' ? 'Ejecutada' : action.status === 'inprogress' ? 'En progreso' : 'Pendiente' }}</template></small><Button v-if="!useFakeApi && can('corrective_actions') && selected.status === 'in_progress' && action.status === 'assigned'" label="Iniciar" size="small" text @click="changeAction(action, 'start')" /><Button v-if="!useFakeApi && can('corrective_actions') && selected.status === 'in_progress' && action.status === 'inprogress'" label="Marcar ejecutada" size="small" text @click="changeAction(action, 'execute')" /></li></ul><p v-else>Aún no hay medidas registradas.</p><template v-if="can('corrective_actions') && selected.status === 'in_progress'"><textarea v-model="actionNote" rows="2" aria-label="Nueva acción correctiva" placeholder="Ej. Riego de vías o instalación de barreras acústicas"></textarea><Button label="Registrar acción" size="small" outlined :disabled="!actionNote.trim()" @click="addAction" /></template></section>
+      <section class="incident-step"><h3>Evidencias de campo <span>{{ selected.evidence.length }}</span></h3><ul v-if="selected.evidence.length"><li v-for="evidence in selected.evidence" :key="evidence.id">{{ evidence.note }}<small>{{ formatDate(evidence.recordedAt) }}</small><a v-if="!useFakeApi && evidence.fileUrl" class="incident-text-button" :href="evidence.fileUrl" target="_blank" rel="noopener noreferrer">Abrir evidencia</a><button v-if="useFakeApi && evidence.attachment" type="button" class="incident-text-button" :title="`SHA-256: ${evidence.attachment.sha256}`" @click="downloadEvidence(evidence)"><i class="pi pi-download" aria-hidden="true"></i> {{ evidence.attachment.name }}</button></li></ul><p v-else>No hay evidencia documentada.</p><template v-if="can('field_evidence') && selected.status === 'in_progress'"><textarea v-model="evidenceNote" rows="2" aria-label="Nueva evidencia de campo" placeholder="Describe la foto, medición o verificación de campo"></textarea><input v-if="useFakeApi" :key="fileInputKey" type="file" accept="image/png,image/jpeg,application/pdf" aria-label="Adjuntar evidencia (opcional)" @change="evidenceFile = $event.target.files?.[0] || null" /><input v-if="!useFakeApi" v-model="evidenceUrl" type="url" aria-label="URL de evidencia (opcional)" placeholder="https://... (opcional)" /><small v-if="useFakeApi">PNG, JPG o PDF, hasta 2 MB. Se calcula SHA-256 en la fake API.</small><small v-else>El backend guarda una URL; sube el archivo a un almacenamiento externo antes de vincularlo.</small><Button label="Registrar evidencia" size="small" outlined :disabled="!evidenceNote.trim() || store.loading.value" @click="addEvidence" /></template></section>
+      <div v-if="can('manage_incidents')" class="incident-close"><Button v-if="selected.status === 'in_progress'" label="Marcar resuelto" :disabled="!selected.actions.length || !selected.evidence.length || (!useFakeApi && selected.actions.some(action => action.status !== 'executed'))" @click="move('resolved')" /><Button v-else-if="selected.status === 'resolved'" label="Cerrar incidente" @click="move('closed')" /></div>
     </template><div v-else class="incident-empty">Selecciona un incidente para consultar su expediente.</div></aside></div>
   </MonitoringShell>
 </template>

@@ -2,7 +2,9 @@ import { computed, ref } from 'vue'
 import { filterIncidents } from '../domain/incident.js'
 import { createIncidentApiRepository } from '../infrastructure/incident-api-repository.js'
 import { getDemoCompanyId } from '../../projects/infrastructure/demo-company.js'
-import { getSessionToken } from '../../iam/application/iam-session.js'
+import { getSessionToken, currentUser } from '../../iam/application/iam-session.js'
+import { createIncidentBackendRepository } from '../infrastructure/incident-backend-repository.js'
+import { useFakeApi } from '../../shared/infrastructure/api-mode.js'
 
 export function createIncidentStore(api) {
   const incidents = ref([])
@@ -19,7 +21,7 @@ export function createIncidentStore(api) {
     loading.value = true
     error.value = ''
     try { return await action() } catch (cause) {
-      error.value = cause instanceof TypeError ? 'No se pudo conectar con la fake API. Inicia npm run dev.' : cause.message || 'No se pudo completar la operación.'
+      error.value = cause instanceof TypeError ? 'No se pudo conectar con la API. Comprueba que el backend esté en ejecución.' : cause.message || 'No se pudo completar la operación.'
       return null
     } finally { loading.value = false }
   }
@@ -58,14 +60,17 @@ export function createIncidentStore(api) {
     addAction: (id, description) => update(id, (target) => api.addAction(target, description)),
     addEvidence: (id, note, attachment) => update(id, (target) => api.addEvidence(target, note, attachment)),
     downloadEvidence: (id, evidenceId) => run(() => api.downloadEvidence(id, evidenceId)),
+    startAction: (id, actionId) => update(id, (target) => api.startAction(target, actionId)),
+    executeAction: (id, actionId) => update(id, (target) => api.executeAction(target, actionId)),
     resolve: (id) => update(id, api.resolve),
     close: (id) => update(id, api.close),
   }
 }
 
-const defaultStore = typeof window === 'undefined' ? null : createIncidentStore(createIncidentApiRepository({
+const defaultStore = typeof window === 'undefined' ? null : createIncidentStore((useFakeApi ? createIncidentApiRepository : createIncidentBackendRepository)({
   baseUrl: import.meta.env?.VITE_INCIDENT_API_URL || new URL('/api/', window.location.origin).href,
   getCompanyId: getDemoCompanyId,
   getToken: getSessionToken,
+  getCurrentUser: () => currentUser.value,
 }))
 export function useIncidents() { return defaultStore }
