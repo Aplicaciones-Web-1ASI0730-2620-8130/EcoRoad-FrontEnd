@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { currentUser, signOut } from '../../../iam/application/iam-session.js'
+import { useFakeApi } from '../../../shared/infrastructure/api-mode.js'
 import OperationalNav from '../../../monitoring/presentation/components/operational-nav.vue'
 import './projects.css'
 
@@ -24,14 +25,14 @@ async function leave() {
         <span><strong>EcoRoad</strong><small>INFRAESTRUCTURA Y ENTORNO</small></span>
       </RouterLink>
       <OperationalNav nav-class="project-nav" divider-class="project-nav-divider" />
-      <div class="project-sidebar-bottom"><i class="pi pi-globe" aria-hidden="true"></i> EcoRoad · Demo</div>
+      <div class="project-sidebar-bottom"><i class="pi pi-globe" aria-hidden="true"></i> EcoRoad · {{ useFakeApi ? 'Demo' : 'Backend' }}</div>
     </aside>
     <div class="project-workspace">
       <header class="project-topbar">
         <div class="project-breadcrumb"><span>EcoRoad</span><i class="pi pi-angle-right" aria-hidden="true"></i><strong><slot name="breadcrumb">{{ $route.meta.title || 'Proyectos viales' }}</slot></strong></div>
         <div class="project-user">
           <span class="project-avatar"><i class="pi pi-user" aria-hidden="true"></i></span>
-          <span><strong>{{ currentUser?.name || 'Equipo EcoRoad' }}</strong><small>{{ currentUser?.email || 'Entorno de demostración' }}</small></span>
+          <span><strong>{{ currentUser?.name || 'Equipo EcoRoad' }}</strong><small>{{ currentUser?.email || (useFakeApi ? 'Entorno de demostración' : 'Sin sesión') }}</small></span>
           <button type="button" class="iam-signout" @click="leave">Salir</button>
         </div>
       </header>

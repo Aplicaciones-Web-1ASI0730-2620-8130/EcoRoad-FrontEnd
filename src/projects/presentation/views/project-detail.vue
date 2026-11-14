@@ -67,11 +67,11 @@ async function deleteSection(section) {
           <div>
             <div class="project-eyebrow">{{ project.code }}</div>
             <h1>{{ project.name }}</h1>
-            <p v-if="useFakeApi">{{ typeLabel }} · {{ project.location }}</p><p v-else>Estado: {{ project.status }}</p>
+            <p v-if="useFakeApi">{{ typeLabel }} · {{ project.location }}</p><p v-else>Estado del proyecto: {{ project.status?.toLowerCase() === 'registered' ? 'Registrado' : project.status }}</p>
           </div>
           <Tag v-if="useFakeApi" :severity="ENVIRONMENTAL_STATUSES[project.environmentalStatus].severity" :value="ENVIRONMENTAL_STATUSES[project.environmentalStatus].label" />
         </div>
-        <Button v-if="useFakeApi" label="Ver monitoreo ambiental" icon="pi pi-chart-line" outlined @click="router.push({ name: 'monitoring-dashboard', query: { projectId: project.id } })" />
+        <Button label="Ver monitoreo ambiental" icon="pi pi-chart-line" outlined @click="router.push({ name: 'monitoring-dashboard', query: { projectId: project.id } })" />
         <div v-if="useFakeApi" class="project-detail-grid">
           <section class="project-panel"><h2>Información general</h2><dl><div><dt>Entidad concesionaria</dt><dd>{{ project.concessionaireName }}</dd></div><div><dt>Tipo de obra</dt><dd>{{ typeLabel }}</dd></div><div><dt>Ubicación</dt><dd>{{ project.location }}</dd></div></dl></section>
           <section class="project-panel"><h2>Resumen ambiental</h2><p>{{ project.environmentalNote }}</p><div class="detail-metrics"><span><strong>{{ project.sensorCount }}</strong>Sensores</span><span><strong>{{ project.alertCount }}</strong>Alertas</span><span><strong>{{ project.incidentCount }}</strong>Incidentes</span></div></section>

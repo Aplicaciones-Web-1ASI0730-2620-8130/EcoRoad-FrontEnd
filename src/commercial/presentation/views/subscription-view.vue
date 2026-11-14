@@ -49,7 +49,7 @@ async function perform(action, message) {
       <div v-if="!commercial.company.value" class="empty-state">
         <i class="pi pi-building" aria-hidden="true"></i>
         <h2>Aún no hay una empresa registrada</h2>
-        <p>Registra tu empresa o carga la cuenta de ejemplo para revisar su suscripción.</p>
+        <p>{{ useFakeApi ? 'Registra tu empresa o carga la cuenta de ejemplo para revisar su suscripción.' : 'Registra tu empresa para consultar su suscripción.' }}</p>
         <RouterLink to="/commercial/register" class="text-link">Ir al registro <i class="pi pi-arrow-right" aria-hidden="true"></i></RouterLink>
         <div v-if="useFakeApi" class="example-action">
           <Button label="Cargar empresa de ejemplo" icon="pi pi-database" outlined :loading="commercial.loading.value" @click="perform(commercial.loadExample, 'Cuenta de ejemplo cargada desde la fake API.')" />
