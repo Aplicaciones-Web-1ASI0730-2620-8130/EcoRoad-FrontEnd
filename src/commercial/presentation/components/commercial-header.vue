@@ -17,6 +17,7 @@ import { RouterLink } from 'vue-router'
     <nav class="header-nav" aria-label="Navegación comercial">
       <RouterLink to="/commercial/register">Registro</RouterLink>
       <RouterLink to="/commercial/subscription">Suscripción</RouterLink>
+      <RouterLink to="/iam/login">Ingresar</RouterLink>
     </nav>
   </header>
 </template>

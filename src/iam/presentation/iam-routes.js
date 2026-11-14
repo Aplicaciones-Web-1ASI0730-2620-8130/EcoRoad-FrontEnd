@@ -6,6 +6,12 @@ export default [
     meta: { title: 'Iniciar sesión' },
   },
   {
+    path: 'invitations/:id',
+    name: 'iam-invitation',
+    component: () => import('./views/accept-invitation-view.vue'),
+    meta: { title: 'Aceptar invitación' },
+  },
+  {
     path: 'forbidden',
     name: 'iam-forbidden',
     component: () => import('./views/forbidden-view.vue'),

@@ -7,6 +7,7 @@ import { useRoute } from 'vue-router'
 import CommercialHeader from '../components/commercial-header.vue'
 import { PLANS, SUBSCRIPTION_STATUS } from '../../domain/commercial-model.js'
 import { useCommercial } from '../../application/use-commercial.js'
+import { useFakeApi } from '../../../shared/infrastructure/api-mode.js'
 
 const commercial = useCommercial()
 const route = useRoute()
@@ -38,10 +39,10 @@ async function perform(action, message) {
       </div>
 
       <Message severity="warn" :closable="false" class="notice">
-        Fake API local: la activación y renovación son simulaciones sin pago real.
+        La activación y renovación de prueba no procesan pagos reales.
       </Message>
       <Message v-if="route.query.access === 'required'" severity="warn" :closable="false" class="notice">Activa la suscripción de la empresa para acceder a Proyectos.</Message>
-      <Message v-if="route.query.access === 'unavailable'" severity="error" :closable="false" class="notice">No se pudo verificar la suscripción. Inicia la fake API e inténtalo de nuevo.</Message>
+      <Message v-if="route.query.access === 'unavailable'" severity="error" :closable="false" class="notice">No se pudo verificar la suscripción. Comprueba que el backend esté disponible.</Message>
       <Message v-if="feedback" severity="success" :closable="false" class="notice">{{ feedback }}</Message>
       <Message v-if="commercial.error.value" severity="error" :closable="false" class="notice">{{ commercial.error.value }}</Message>
 
@@ -50,7 +51,7 @@ async function perform(action, message) {
         <h2>Aún no hay una empresa registrada</h2>
         <p>Registra tu empresa o carga la cuenta de ejemplo para revisar su suscripción.</p>
         <RouterLink to="/commercial/register" class="text-link">Ir al registro <i class="pi pi-arrow-right" aria-hidden="true"></i></RouterLink>
-        <div class="example-action">
+        <div v-if="useFakeApi" class="example-action">
           <Button label="Cargar empresa de ejemplo" icon="pi pi-database" outlined :loading="commercial.loading.value" @click="perform(commercial.loadExample, 'Cuenta de ejemplo cargada desde la fake API.')" />
         </div>
       </div>
@@ -74,11 +75,11 @@ async function perform(action, message) {
           <section class="subscription-card">
             <div class="card-topline"><span>CUENTA EMPRESARIAL</span><i class="pi pi-building" aria-hidden="true"></i></div>
             <h2>{{ commercial.company.value.name }}</h2>
-            <p>RUC {{ commercial.company.value.ruc }}</p>
+            <p>{{ useFakeApi ? 'RUC' : 'Código' }} {{ useFakeApi ? commercial.company.value.ruc : commercial.company.value.code }}</p>
             <div class="card-divider"></div>
             <dl>
-              <div><dt>Administrador</dt><dd>{{ commercial.company.value.adminName }}</dd></div>
-              <div><dt>Correo</dt><dd>{{ commercial.company.value.adminEmail }}</dd></div>
+              <div v-if="useFakeApi"><dt>Administrador</dt><dd>{{ commercial.company.value.adminName }}</dd></div>
+              <div v-if="useFakeApi"><dt>Correo</dt><dd>{{ commercial.company.value.adminEmail }}</dd></div>
               <div><dt>Registro</dt><dd>{{ formattedDate(commercial.company.value.registeredAt) }}</dd></div>
             </dl>
           </section>
@@ -89,7 +90,7 @@ async function perform(action, message) {
             <div class="card-topline"><span>GESTIÓN DEL PLAN</span></div>
             <h2>{{ status === SUBSCRIPTION_STATUS.ACTIVE ? 'Renueva tu suscripción' : 'Selecciona y activa tu plan' }}</h2>
             <p v-if="status !== SUBSCRIPTION_STATUS.ACTIVE">La empresa tendrá acceso a los módulos operativos cuando la suscripción esté activa.</p>
-            <p v-else>La renovación demo extenderá la vigencia por un año desde el vencimiento actual.</p>
+            <p v-else>La renovación extenderá la vigencia del plan actual.</p>
           </div>
           <div v-if="status !== SUBSCRIPTION_STATUS.ACTIVE" class="plan-buttons" aria-label="Planes disponibles">
             <Button
@@ -103,24 +104,24 @@ async function perform(action, message) {
           <div class="management-actions">
             <Button
               v-if="status !== SUBSCRIPTION_STATUS.ACTIVE"
-              label="Simular activación"
+              label="Activar suscripción"
               icon="pi pi-check-circle"
               :loading="commercial.loading.value"
-              @click="perform(commercial.activate, 'Suscripción activada en el modo demo.')"
+              @click="perform(commercial.activate, 'Suscripción activada.')"
             />
             <Button
               v-else
-              label="Simular renovación"
+              label="Renovar suscripción"
               icon="pi pi-refresh"
               :loading="commercial.loading.value"
-              @click="perform(commercial.renew, 'Vigencia renovada en el modo demo.')"
+              @click="perform(commercial.renew, 'Vigencia renovada.')"
             />
           </div>
         </section>
-        <button type="button" class="change-company" @click="commercial.clearSelection(); feedback = ''">Cambiar empresa de demostración</button>
+        <button type="button" class="change-company" @click="commercial.clearSelection(); feedback = ''">Cambiar empresa</button>
         <p class="access-note">
           <i :class="commercial.hasOperationalAccess.value ? 'pi pi-lock-open' : 'pi pi-lock'" aria-hidden="true"></i>
-          {{ commercial.hasOperationalAccess.value ? 'Acceso operativo habilitado en esta demostración.' : 'Los módulos operativos requieren una suscripción activa.' }}
+          {{ commercial.hasOperationalAccess.value ? 'Acceso operativo habilitado.' : 'Los módulos operativos requieren una suscripción activa.' }}
         </p>
         <RouterLink v-if="commercial.hasOperationalAccess.value" to="/projects" class="text-link">Ir a Proyectos <i class="pi pi-arrow-right" aria-hidden="true"></i></RouterLink>
       </template>

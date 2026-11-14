@@ -1,9 +1,14 @@
 import { computed, ref } from 'vue'
 import { createCommercialApiRepository } from '../infrastructure/commercial-api-repository.js'
+import { createCommercialBackendRepository } from '../infrastructure/commercial-backend-repository.js'
+import { getIamApi } from '../../iam/application/iam-session.js'
+import { useFakeApi } from '../../shared/infrastructure/api-mode.js'
 import { PLANS, canAccessOperationalModules, validateCompanyRegistration } from '../domain/commercial-model.js'
 
 const SELECTED_COMPANY_KEY = 'ecoroad.commercial.selected-company'
-const api = createCommercialApiRepository({
+const PENDING_ONBOARDING_KEY = 'ecoroad.commercial.pending-onboarding'
+const pendingOnboardingId = ref(localStorage.getItem(PENDING_ONBOARDING_KEY))
+const api = (useFakeApi ? createCommercialApiRepository : createCommercialBackendRepository)({
   baseUrl: import.meta.env.VITE_COMMERCIAL_API_URL || new URL('/api/', window.location.origin).href,
 })
 const state = ref(null)
@@ -13,7 +18,7 @@ const selectedCompanyId = ref(localStorage.getItem(SELECTED_COMPANY_KEY))
 
 function describeError(cause) {
   return cause instanceof TypeError
-    ? 'No se pudo conectar con la fake API. Inicia npm run api:fake.'
+    ? 'No se pudo conectar con la API. Comprueba que el backend esté en ejecución.'
     : cause.message || 'Ocurrió un error inesperado.'
 }
 
@@ -32,6 +37,7 @@ async function run(action) {
 
 export function useCommercial() {
   const company = computed(() => state.value?.company || null)
+  const needsAdminRegistration = computed(() => !useFakeApi && Boolean(pendingOnboardingId.value))
   const subscription = computed(() => state.value?.subscription || null)
   const selectedPlan = computed(() => PLANS.find((plan) => plan.id === subscription.value?.planId) || null)
   const hasOperationalAccess = computed(() => canAccessOperationalModules(subscription.value))
@@ -49,7 +55,7 @@ export function useCommercial() {
       state.value = { company: currentCompany, subscription: currentSubscription }
       return true
     })
-    if (!result && error.value.includes('no encontrada')) {
+    if (!result && error.value.includes('HTTP 404')) {
       localStorage.removeItem(SELECTED_COMPANY_KEY)
       selectedCompanyId.value = null
       state.value = null
@@ -59,6 +65,7 @@ export function useCommercial() {
 
   return {
     company,
+    needsAdminRegistration,
     subscription,
     selectedPlan,
     hasOperationalAccess,
@@ -67,13 +74,22 @@ export function useCommercial() {
     refresh,
     async registerCompany(input) {
       const errors = validateCompanyRegistration(input)
+      if (!useFakeApi && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}$/.test(input.adminPassword || '')) errors.adminPassword = 'Usa al menos 8 caracteres, mayúscula, minúscula y número.'
       if (Object.keys(errors).length) return errors
       const result = await run(async () => {
-        const currentCompany = await api.registerCompany(input)
+        const currentCompany = pendingOnboardingId.value
+          ? await api.getAccount(pendingOnboardingId.value) : await api.registerCompany(input)
         selectedCompanyId.value = currentCompany.id
         localStorage.setItem(SELECTED_COMPANY_KEY, currentCompany.id)
+        if (!useFakeApi && !pendingOnboardingId.value) {
+          pendingOnboardingId.value = currentCompany.id
+          localStorage.setItem(PENDING_ONBOARDING_KEY, currentCompany.id)
+        }
         const currentSubscription = await api.selectPlan(currentCompany.id, input.planId)
+        if (!useFakeApi) await getIamApi().signUp(currentCompany.id, input.adminName.trim(), input.adminEmail.trim(), input.adminPassword)
         state.value = { company: currentCompany, subscription: currentSubscription }
+        pendingOnboardingId.value = null
+        localStorage.removeItem(PENDING_ONBOARDING_KEY)
         return true
       })
       const failure = error.value
@@ -105,6 +121,7 @@ export function useCommercial() {
       }))
     },
     async loadExample() {
+      if (!useFakeApi) return false
       selectedCompanyId.value = 'demo-company'
       localStorage.setItem(SELECTED_COMPANY_KEY, 'demo-company')
       return refresh()
@@ -112,6 +129,8 @@ export function useCommercial() {
     clearSelection() {
       selectedCompanyId.value = null
       localStorage.removeItem(SELECTED_COMPANY_KEY)
+      pendingOnboardingId.value = null
+      localStorage.removeItem(PENDING_ONBOARDING_KEY)
       state.value = null
       error.value = ''
     },

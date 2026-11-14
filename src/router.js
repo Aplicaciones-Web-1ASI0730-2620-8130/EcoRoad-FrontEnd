@@ -10,8 +10,10 @@ import incidentRoutes from './incidents/presentation/incident-routes.js'
 import { createCommercialApiRepository } from './commercial/infrastructure/commercial-api-repository.js'
 import { canAccessOperationalModules } from './commercial/domain/commercial-model.js'
 import { restoreSession } from './iam/application/iam-session.js'
+import { useFakeApi } from './shared/infrastructure/api-mode.js'
+import { createCommercialBackendRepository } from './commercial/infrastructure/commercial-backend-repository.js'
 
-const commercialApi = createCommercialApiRepository({
+const commercialApi = (useFakeApi ? createCommercialApiRepository : createCommercialBackendRepository)({
   baseUrl: import.meta.env.VITE_COMMERCIAL_API_URL || new URL('/api/', window.location.origin).href,
 })
 

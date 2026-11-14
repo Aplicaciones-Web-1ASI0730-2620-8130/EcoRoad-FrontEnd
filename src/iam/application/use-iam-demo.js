@@ -1,8 +1,14 @@
 import { computed, ref } from 'vue'
 import { validateInvitation } from '../domain/user-access.js'
 import { getIamApi } from './iam-session.js'
+import { useFakeApi } from '../../shared/infrastructure/api-mode.js'
 
-// Page state backed by the fake IAM API.
+function pendingInvitation(invitation) {
+  return { id: invitation.id, companyId: invitation.companyId, name: invitation.name, email: invitation.email,
+    roleId: { CompanyAdmin: 'company_admin', SiteDirector: 'site_director', EnvironmentalEngineer: 'environmental_engineer', Inspector: 'inspector', FieldCollaborator: 'field_collaborator' }[invitation.role],
+    permissions: [], access: { status: 'pending' }, invitation: { status: 'pending' }, isInvitation: true }
+}
+
 export function createIamDemoStore(companyId, api = getIamApi()) {
   const users = ref([])
   const selectedId = ref(null)
@@ -13,7 +19,13 @@ export function createIamDemoStore(companyId, api = getIamApi()) {
   async function load() {
     error.value = ''
     try {
-      users.value = await api.listUsers()
+      const activeUsers = await api.listUsers()
+      if (useFakeApi) users.value = activeUsers
+      else {
+        const invitations = await api.listInvitations()
+        users.value = [...activeUsers, ...invitations.filter((item) => item.status === 'Pending' &&
+          !activeUsers.some((user) => user.email.toLowerCase() === item.email.toLowerCase())).map(pendingInvitation)]
+      }
       if (!users.value.some((user) => user.id === selectedId.value)) selectedId.value = users.value[1]?.id || users.value[0]?.id || null
     } catch (cause) { error.value = cause.message }
   }
@@ -32,7 +44,8 @@ export function createIamDemoStore(companyId, api = getIamApi()) {
     fieldErrors.value = validateInvitation({ ...input, companyId }, users.value)
     if (Object.keys(fieldErrors.value).length) return null
     try {
-      const user = await api.invite(input)
+      const invitation = await api.invite(input)
+      const user = useFakeApi ? invitation : pendingInvitation(invitation)
       users.value = [...users.value, user]
       selectedId.value = user.id
       return user

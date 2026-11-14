@@ -6,6 +6,7 @@ import { PERMISSIONS, ROLES } from '../../domain/user-access.js'
 import { createIamDemoStore } from '../../application/use-iam-demo.js'
 import { getDemoCompanyId } from '../../../projects/infrastructure/demo-company.js'
 import { currentUser } from '../../application/iam-session.js'
+import { useFakeApi } from '../../../shared/infrastructure/api-mode.js'
 import '../iam.css'
 
 const store = createIamDemoStore(getDemoCompanyId())
@@ -34,7 +35,8 @@ async function submitInvite() {
   if (!invited) return
   inviteOpen.value = false
   Object.assign(inviteDraft, { name: '', email: '', roleId: 'environmental_engineer' })
-  feedback.value = 'Invitación creada. Concede acceso para habilitar el inicio de sesión.'
+  feedback.value = useFakeApi ? 'Invitación creada. Concede acceso para habilitar el inicio de sesión.'
+    : `Invitación creada. Comparte este enlace con el colaborador: ${window.location.origin}/iam/invitations/${invited.id}`
 }
 
 async function grant() {
@@ -65,8 +67,8 @@ async function savePermissions() {
 
 <template>
   <MonitoringShell>
-    <div class="monitoring-heading iam-heading"><div><span class="monitoring-eyebrow">IDENTIDAD Y ACCESO</span><h1>Colaboradores y permisos</h1><p>Invita personas y configura las acciones disponibles según su función en la empresa.</p></div><Button label="Invitar colaborador" icon="pi pi-user-plus" @click="inviteOpen = !inviteOpen" /></div>
-    <div class="iam-demo-note" role="note"><i class="pi pi-info-circle" aria-hidden="true"></i> Fake API local: los cambios se conservan al recargar y se reinician al reiniciar el servidor.</div>
+    <div class="monitoring-heading iam-heading"><div><span class="monitoring-eyebrow">IDENTIDAD Y ACCESO</span><h1>Colaboradores y permisos</h1><p>Invita personas y configura las acciones disponibles según su función en la empresa.</p></div><Button label="Invitar colaborador" icon="pi pi-user-plus" @click="inviteOpen = !inviteOpen" /><Button v-if="!useFakeApi" label="Actualizar" outlined @click="store.load()" /></div>
+    <div v-if="useFakeApi" class="iam-demo-note" role="note"><i class="pi pi-info-circle" aria-hidden="true"></i> Fake API local: los cambios se conservan al recargar y se reinician al reiniciar el servidor.</div>
     <div v-if="store.error.value" class="iam-error" role="alert">{{ store.error.value }}</div>
     <div v-if="feedback" class="iam-feedback" role="status">{{ feedback }}</div>
 
@@ -84,9 +86,9 @@ async function savePermissions() {
     </section>
 
     <section class="iam-panel iam-detail" aria-labelledby="iam-detail-title"><template v-if="selected"><div class="iam-panel-title"><div><span>EDITAR ACCESO</span><h2 id="iam-detail-title">{{ selected.name }}</h2><p>{{ selected.email }}</p></div><span class="iam-status" :class="selected.access.status">{{ selected.access.status === 'active' ? 'Activo' : selected.access.status === 'revoked' ? 'Revocado' : 'Invitado' }}</span></div>
-      <div class="iam-role-editor"><label for="iam-role">Rol de la organización</label><div><select id="iam-role" v-model="draftRole"><option v-for="[id, role] in Object.entries(ROLES)" :key="id" :value="id">{{ role.label }}</option></select><Button label="Asignar rol" size="small" outlined :disabled="draftRole === selected.roleId" @click="saveRole" /></div></div>
-      <div class="iam-access-actions"><Button v-if="selected.access.status !== 'active'" label="Conceder acceso" icon="pi pi-check" size="small" @click="grant" /><Button v-else label="Revocar acceso" icon="pi pi-ban" size="small" severity="danger" outlined :disabled="selected.id === currentUser?.id" @click="revoke" /><small>{{ selected.access.status === 'active' ? 'El usuario cumple la política de acceso para iniciar sesión.' : 'No puede iniciar sesión hasta que se le conceda acceso.' }}</small></div>
-      <fieldset class="iam-permissions"><legend>Acciones autorizadas</legend><label v-for="[key, permission] in Object.entries(PERMISSIONS)" :key="key" :class="{ disabled: selected.access.status !== 'active' }"><input type="checkbox" :checked="draftPermissions.includes(key)" :disabled="selected.access.status !== 'active'" @change="togglePermission(key)" /><span><strong>{{ permission.label }}</strong><small>{{ permission.detail }}</small></span></label></fieldset><Button label="Guardar permisos" icon="pi pi-check" class="iam-save" :disabled="selected.access.status !== 'active'" @click="savePermissions" />
+      <div v-if="!selected.isInvitation" class="iam-role-editor"><label for="iam-role">Rol de la organización</label><div><select id="iam-role" v-model="draftRole"><option v-for="[id, role] in Object.entries(ROLES)" :key="id" :value="id">{{ role.label }}</option></select><Button label="Asignar rol" size="small" outlined :disabled="draftRole === selected.roleId" @click="saveRole" /></div></div>
+      <div v-if="!selected.isInvitation" class="iam-access-actions"><Button v-if="selected.access.status !== 'active'" label="Conceder acceso" icon="pi pi-check" size="small" @click="grant" /><Button v-else label="Revocar acceso" icon="pi pi-ban" size="small" severity="danger" outlined :disabled="selected.id === currentUser?.id" @click="revoke" /><small>{{ selected.access.status === 'active' ? 'El usuario cumple la política de acceso para iniciar sesión.' : 'No puede iniciar sesión hasta que se le conceda acceso.' }}</small></div>
+      <fieldset v-if="!selected.isInvitation" class="iam-permissions"><legend>Acciones autorizadas</legend><label v-for="[key, permission] in Object.entries(PERMISSIONS)" :key="key" :class="{ disabled: selected.access.status !== 'active' }"><input type="checkbox" :checked="draftPermissions.includes(key)" :disabled="selected.access.status !== 'active'" @change="togglePermission(key)" /><span><strong>{{ permission.label }}</strong><small>{{ permission.detail }}</small></span></label></fieldset><Button v-if="!selected.isInvitation" label="Guardar permisos" icon="pi pi-check" class="iam-save" :disabled="selected.access.status !== 'active'" @click="savePermissions" />
     </template><div v-else id="iam-detail-title" class="iam-empty">Selecciona un colaborador para consultar sus permisos.</div></section></div>
   </MonitoringShell>
 </template>

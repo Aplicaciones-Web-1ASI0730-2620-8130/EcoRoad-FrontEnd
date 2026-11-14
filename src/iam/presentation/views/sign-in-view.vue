@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import { getDemoCompanyId } from '../../../projects/infrastructure/demo-company.js'
+import { useFakeApi } from '../../../shared/infrastructure/api-mode.js'
 import { signIn } from '../../application/iam-session.js'
 import '../iam.css'
 
@@ -13,13 +14,13 @@ const password = ref('')
 const visible = ref(false)
 const busy = ref(false)
 const error = ref('')
-const isDemoCompany = getDemoCompanyId() === 'demo-company'
+const isDemoCompany = useFakeApi && getDemoCompanyId() === 'demo-company'
 
 async function submit() {
   busy.value = true
   error.value = ''
   try {
-    await signIn(getDemoCompanyId(), email.value, password.value)
+    await signIn(useFakeApi ? getDemoCompanyId() : null, email.value, password.value)
     const target = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') && !route.query.redirect.startsWith('//') ? route.query.redirect : '/projects'
     await router.replace(target)
   } catch (cause) { error.value = cause.message } finally { busy.value = false }
@@ -39,7 +40,8 @@ async function submit() {
         <div v-if="error" class="iam-error" role="alert">{{ error }}</div>
         <Button type="submit" label="Ingresar a la plataforma" icon="pi pi-arrow-right" icon-pos="right" :loading="busy" />
       </form>
-      <div class="iam-demo-credentials"><strong>Acceso de demostración</strong><span>{{ isDemoCompany ? 'c.mendoza@empresa.pe' : 'Usa el correo administrador registrado' }}</span><span>EcoRoadDemo123!</span><small>Esta contraseña solo funciona en la fake API local. Las cuentas nuevas se reinician al reiniciar el servidor.</small></div>
+      <p v-if="!useFakeApi">¿Tu empresa aún no está registrada? <RouterLink to="/commercial/register">Crear cuenta empresarial</RouterLink></p>
+      <div v-if="useFakeApi" class="iam-demo-credentials"><strong>Acceso de demostración</strong><span>{{ isDemoCompany ? 'c.mendoza@empresa.pe' : 'Usa el correo administrador registrado' }}</span><span>EcoRoadDemo123!</span><small>Esta contraseña solo funciona en la fake API local. Las cuentas nuevas se reinician al reiniciar el servidor.</small></div>
     </section></main>
   </div>
 </template>

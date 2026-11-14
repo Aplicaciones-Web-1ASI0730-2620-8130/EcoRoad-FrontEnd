@@ -7,6 +7,7 @@ import Checkbox from 'primevue/checkbox'
 import Message from 'primevue/message'
 import CommercialHeader from '../components/commercial-header.vue'
 import { COMPANY_TYPES, PLANS } from '../../domain/commercial-model.js'
+import { useFakeApi } from '../../../shared/infrastructure/api-mode.js'
 import { useCommercial } from '../../application/use-commercial.js'
 
 const router = useRouter()
@@ -14,10 +15,12 @@ const commercial = useCommercial()
 const form = reactive({
   companyName: '',
   ruc: '',
-  companyType: 'construction',
+  companyCode: '',
+  companyType: useFakeApi ? 'construction' : 'Construction',
   adminName: '',
   professionalLicense: '',
   adminEmail: '',
+  adminPassword: '',
   planId: 'professional',
   acceptedTerms: false,
 })
@@ -40,11 +43,11 @@ async function submit() {
       <p class="page-intro">Habilita el monitoreo ambiental y la auditoría de tus proyectos de construcción o mantenimiento vial.</p>
 
       <Message v-if="commercial.company.value" severity="info" :closable="false" class="notice">
-        Ya hay una empresa seleccionada en esta demostración.
+        {{ commercial.needsAdminRegistration.value ? 'La empresa se creó, pero falta completar el registro del administrador. Corrige el formulario y reintenta.' : 'Ya hay una empresa seleccionada.' }}
         <RouterLink to="/commercial/subscription">Ver suscripción</RouterLink>
       </Message>
       <Message severity="warn" :closable="false" class="notice">
-        Fake API local: los datos son de ejemplo y no se procesan pagos reales.
+        El registro crea una cuenta en el backend. La activación de la suscripción no procesa pagos reales.
       </Message>
 
       <form class="registration-form" novalidate @submit.prevent="submit">
@@ -77,9 +80,10 @@ async function submit() {
               <small v-if="errors.companyName" class="field-error">{{ errors.companyName }}</small>
             </div>
             <div class="field">
-              <label for="ruc">RUC (11 dígitos) <b>*</b></label>
-              <InputText id="ruc" v-model="form.ruc" placeholder="20601234567" :invalid="!!errors.ruc" inputmode="numeric" maxlength="11" />
-              <small v-if="errors.ruc" class="field-error">{{ errors.ruc }}</small>
+              <label for="ruc">{{ useFakeApi ? 'RUC (11 dígitos)' : 'Código de empresa (3 caracteres)' }} <b>*</b></label>
+              <InputText v-if="useFakeApi" id="ruc" v-model="form.ruc" placeholder="20601234567" :invalid="!!errors.ruc" inputmode="numeric" maxlength="11" />
+              <InputText v-else id="ruc" v-model.trim="form.companyCode" placeholder="E01" :invalid="!!errors.companyCode" maxlength="3" />
+              <small v-if="errors.ruc || errors.companyCode" class="field-error">{{ errors.ruc || errors.companyCode }}</small>
             </div>
           </div>
           <div class="field">
@@ -121,6 +125,11 @@ async function submit() {
               <InputText id="admin-email" v-model="form.adminEmail" type="email" placeholder="c.mendoza@empresa.pe" :invalid="!!errors.adminEmail" autocomplete="email" />
               <small v-if="errors.adminEmail" class="field-error">{{ errors.adminEmail }}</small>
             </div>
+            <div v-if="!useFakeApi" class="field">
+              <label for="admin-password">Contraseña del administrador <b>*</b></label>
+              <InputText id="admin-password" v-model="form.adminPassword" type="password" autocomplete="new-password" :invalid="!!errors.adminPassword" />
+              <small v-if="errors.adminPassword" class="field-error">{{ errors.adminPassword }}</small>
+            </div>
           </div>
         </section>
 
@@ -132,8 +141,8 @@ async function submit() {
         <Message v-if="errors.form" severity="error" :closable="false" class="notice">{{ errors.form }}</Message>
 
         <div class="form-actions">
-          <span>El acceso del administrador se configurará en el contexto de identidad.</span>
-          <Button type="submit" label="Crear cuenta empresarial" icon="pi pi-arrow-right" icon-pos="right" :loading="commercial.loading.value" :disabled="!!commercial.company.value" />
+          <span>Se creará el usuario administrador para que pueda iniciar sesión.</span>
+          <Button type="submit" label="Crear cuenta empresarial" icon="pi pi-arrow-right" icon-pos="right" :loading="commercial.loading.value" :disabled="!!commercial.company.value && !commercial.needsAdminRegistration.value" />
         </div>
       </form>
     </div>
