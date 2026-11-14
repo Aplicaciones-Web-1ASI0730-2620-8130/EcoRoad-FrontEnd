@@ -5,6 +5,8 @@ import MonitoringShell from '../../../monitoring/presentation/components/monitor
 import { REPORT_SECTIONS, validateReportCriteria } from '../../domain/report-preview.js'
 import { useCompliance } from '../../application/use-compliance.js'
 import '../reports.css'
+import { useFakeApi } from '../../../shared/infrastructure/api-mode.js'
+import RealReportWorkspace from './real-report-workspace.vue'
 
 const store = useCompliance()
 const projects = store.projects
@@ -62,14 +64,15 @@ async function openReport(id) {
 }
 
 onMounted(async () => {
-  if (!await store.load()) return
+  if (!useFakeApi || !await store.load()) return
   criteria.projectId = projects.value.find((project) => project.id === 'prj-lima-canta')?.id || projects.value[0]?.id || ''
   if (criteria.projectId) await refreshPreview()
 })
 </script>
 
 <template>
-  <MonitoringShell>
+  <RealReportWorkspace v-if="!useFakeApi" />
+  <MonitoringShell v-else>
     <div class="monitoring-heading reports-heading">
       <div><span class="monitoring-eyebrow">AUDITORÍA Y CUMPLIMIENTO</span><h1>Reportes ambientales</h1><p>Consolida indicadores y alertas por proyecto y periodo.</p></div>
       <span class="reports-demo-badge"><i class="pi pi-info-circle" aria-hidden="true"></i> Vista previa de demostración</span>
