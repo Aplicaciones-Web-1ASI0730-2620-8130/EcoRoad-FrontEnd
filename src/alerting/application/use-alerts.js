@@ -2,6 +2,8 @@ import { computed, ref } from 'vue'
 import { filterAlerts, summarizeAlerts } from '../domain/alert.js'
 import { createAlertingApiRepository } from '../infrastructure/alerting-api-repository.js'
 import { getDemoCompanyId } from '../../projects/infrastructure/demo-company.js'
+import { createAlertingBackendRepository } from '../infrastructure/alerting-backend-repository.js'
+import { useFakeApi } from '../../shared/infrastructure/api-mode.js'
 
 export function createAlertStore(api) {
   const alerts = ref([])
@@ -17,7 +19,7 @@ export function createAlertStore(api) {
     error.value = ''
     try { return await action() } catch (cause) {
       error.value = cause instanceof TypeError
-        ? 'No se pudo conectar con la fake API. Inicia npm run dev.'
+        ? 'No se pudo conectar con la API. Comprueba que el backend esté en ejecución.'
         : cause.message || 'Ocurrió un error al consultar alertas.'
       return null
     } finally { loading.value = false }
@@ -32,14 +34,14 @@ export function createAlertStore(api) {
   async function acknowledge(id, person) {
     const updated = await run(() => api.acknowledgeAlert(id, person))
     if (!updated) return false
-    alerts.value = alerts.value.map((alert) => alert.id === id ? updated : alert)
+    alerts.value = api.activeOnly ? alerts.value.filter((alert) => alert.id !== id) : alerts.value.map((alert) => alert.id === id ? updated : alert)
     return true
   }
 
   return { alerts, filters, loading, error, visibleAlerts, summary, projects, loadAlerts, acknowledge }
 }
 
-const defaultStore = typeof window === 'undefined' ? null : createAlertStore(createAlertingApiRepository({
+const defaultStore = typeof window === 'undefined' ? null : createAlertStore((useFakeApi ? createAlertingApiRepository : createAlertingBackendRepository)({
   baseUrl: import.meta.env?.VITE_ALERTING_API_URL || new URL('/api/', window.location.origin).href,
   getCompanyId: getDemoCompanyId,
 }))
