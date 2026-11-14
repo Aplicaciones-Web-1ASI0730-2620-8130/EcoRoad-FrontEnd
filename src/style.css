@@ -40,6 +40,7 @@ a { color: inherit; }
 h1 { margin: 0; font-size: clamp(27px, 3vw, 36px); color: #254652; letter-spacing: -.04em; line-height: 1.2; }
 .page-intro { color: #53656a; font-size: 15px; line-height: 1.6; max-width: 670px; margin: 12px 0 26px; }
 .notice { margin: 12px 0 18px; }
+.notice.p-message-warn { color: #5c4700; }
 .notice a { color: #006d53; font-weight: 700; }
 
 .registration-form { margin-top: 24px; }
