@@ -1,98 +1,47 @@
 # EcoRoad Frontend
 
-## Desarrollo con el backend real
+SPA de EcoRoad con Vue 3, Vite y PrimeVue. El código se organiza por contexto (`domain`, `application`, `infrastructure`, `presentation`).
 
-Inicia EcoRoad Back-End en `http://localhost:5080` y ejecuta `npm run dev` en este proyecto. Vite envía `/api` al backend. Si usa otro puerto, configura `API_PROXY_TARGET` en `.env.local` (consulta `.env.example`).
+## Ejecutar con el backend y MySQL
 
-Para trabajar con la API simulada ejecuta `npm run dev:fake`. Las pantallas todavía tienen contratos de demostración que se adaptarán al backend real en los siguientes cambios.
+1. Inicia MySQL y comprueba que el esquema del backend tiene las migraciones aplicadas.
+2. Inicia `EcoRoad-platform` desde Rider con el perfil `EcoRoad-platform` y la variable de entorno `ConnectionStrings__DefaultConnection` configurada para tu base local. El backend debe responder en `http://localhost:5080/scalar`.
+3. En este repositorio ejecuta `npm install` y `npm run dev`. Abre la URL de Vite que aparece en la terminal. Vite redirige `/api` al backend en el puerto 5080.
+4. Registra una empresa, crea su administrador IAM, activa la suscripción e inicia sesión. Las rutas operativas requieren sesión, permiso y suscripción activa.
+5. Para verificar las rutas de lectura, ejecuta `npm run smoke:real`. Si Vite también está encendido, configura `ECOROAD_FRONTEND_URL` con su URL para verificar el proxy. El comando no escribe datos.
 
-## Documentación de los módulos
-# EcoRoad FrontEnd
+Si el backend usa otro puerto, agrega `API_PROXY_TARGET=http://127.0.0.1:<puerto>` a `.env.local` antes de iniciar Vite. Mantén `VITE_*_API_URL` sin configurar para usar el proxy local. Consulta `.env.example`.
 
-SPA de EcoRoad construida con **Vue 3**, **Vite** y **PrimeVue** para la gestión ambiental de proyectos viales. El código se organiza por **bounded contexts** bajo `src/` (`domain/`, `application/`, `infrastructure/`, `presentation/`).
+## Modos y comandos
 
-Módulos integrados en `develop`:
+| Comando | Uso |
+| --- | --- |
+| `npm run dev` | Frontend con backend real mediante `/api` |
+| `npm run dev:fake` | Frontend y API simulada local |
+| `npm run smoke:real` | Comprobación de solo lectura del backend |
+| `npm test` | Pruebas de dominio, API simulada y contratos HTTP |
+| `npm run lint` | Análisis estático |
+| `npm run build` | Compilación de producción |
 
-| Contexto | Rutas principales | Código |
-|----------|-------------------|--------|
-| Commercial and Subscription Management | `/commercial/register`, `/commercial/subscription` | `src/commercial/` |
-| Identity and Access Management (IAM) | `/iam/login`, `/iam/collaborators` | `src/iam/` |
-| Project and Road Site Management | `/projects` | `src/projects/` |
-| Environmental Monitoring | `/monitoring`, `/monitoring/history` | `src/monitoring/` |
-| Alerting and Risk Evaluation | `/alerts` | `src/alerting/` |
-| Incident and Remediation Management | `/incidents` | `src/incidents/` |
-| Monitoring Asset and Deployment | `/assets` | `src/assets/` |
-| Compliance and Reporting | `/compliance` | `src/compliance/` |
+El modo simulado usa datos en memoria. Para activarlo con `npm run dev` configura `VITE_API_MODE=fake` y el destino de la API simulada; `npm run dev:fake` realiza ambos pasos.
 
-Las rutas operativas (`/projects`, `/monitoring`, `/alerts`, `/incidents`, `/assets`, `/compliance`, `/iam/collaborators`) exigen sesión IAM, permisos por módulo y suscripción activa según las reglas de Commercial.
+## Módulos conectados
 
-## Ejecución local
+- Comercial y suscripciones: `/commercial/register`, `/commercial/subscription`
+- Identidad y permisos: `/iam/login`, `/iam/collaborators`
+- Proyectos y tramos: `/projects`
+- Monitoreo, historial y captura: `/monitoring`, `/monitoring/history`, `/monitoring/operations`
+- Sensores y puntos: `/assets`
+- Alertas e incidentes: `/alerts`, `/incidents`
+- Reportes: `/compliance`
 
-```bash
-npm install
-npm run dev
-```
+Las pantallas con API real presentan únicamente los campos que ofrece el backend. Las pruebas automatizadas usan respuestas simuladas para verificar el contrato; `smoke:real` comprueba rutas de lectura del servidor en ejecución. Para verificar cambios de estado, usa la interfaz con una empresa de prueba.
 
-`npm run dev` levanta **Vite** y la **fake API** en `http://127.0.0.1:3001/api`. Vite redirige `/api` a ese servidor. Abre la URL que imprime Vite en la consola.
+## Límites actuales del backend
 
-Si solo necesitas la API:
+- La API de alertas lista solo alertas activas. No hay consulta de reglas registradas.
+- La API de cumplimiento permite generar un PDF con identificadores y cantidades, pero no ofrece un listado de reportes ni verifica criptográficamente el texto de firma.
+- La API de incidentes almacena una URL de evidencia; no ofrece subida ni descarga de archivos.
+- El estado de cumplimiento de un proyecto se puede actualizar, pero no consultar con el contrato actual.
 
-```bash
-npm run api:fake
-```
-
-Otros scripts:
-
-```bash
-npm test          # reglas de dominio y flujos HTTP
-npm run build     # build de producción
-npm run preview   # vista previa del build
-```
-
-### Datos de demostración
-
-- La fake API guarda datos **en memoria**; se reinician al detener el servidor.
-- El navegador persiste el ID de empresa en `localStorage` (`ecoroad.commercial.selected-company`) y el token de sesión demo en `sessionStorage` (`ecoroad.iam.demo-session`).
-- Inicio de sesión demo: usuario `c.mendoza@empresa.pe` y la contraseña indicada en `/iam/login` (empresa demo `demo-company`).
-
-## Commercial and Subscription Management
-
-- Registro de cuenta empresarial (RUC, tipo de empresa, contacto administrador, plan).
-- Vista de suscripción con estado, vigencia y datos de la empresa.
-- Activación y renovación simuladas; regla de acceso operacional en `canAccessOperationalModules`.
-- Commercial es dueño de **Company Account** y **Subscription**; credenciales, roles e invitaciones viven en IAM.
-
-Contrato y fake API: `docs/commercial-api-contract.md`, `server/fake-commercial-api.mjs`. Variable opcional: `VITE_COMMERCIAL_API_URL`.
-
-## Project and Road Site Management
-
-Listado, búsqueda, filtros, alta de proyectos y detalle con tramos (`PK 00+000`, orden y no superposición). Los datos de ejemplo están en `src/projects/infrastructure/project-fixtures.js`. Los cambios sobreviven a recargar el navegador mientras la API siga en ejecución.
-
-Contrato: `docs/projects-api-contract.md`. Variable opcional: `VITE_PROJECTS_API_URL`.
-
-## Environmental Monitoring
-
-Dashboard por proyecto y tramo (aire, ruido, agua, vibración) e historial en `/monitoring/history`. Lecturas y umbrales de demo en `src/monitoring/infrastructure/monitoring-fixtures.js`; no son telemetría certificada.
-
-Contrato: `docs/monitoring-api-contract.md`. Variable opcional: `VITE_MONITORING_API_URL`.
-
-## Alerting, incidentes, activos y compliance
-
-- **Alertas** (`/alerts`): consulta y atención sobre perfiles de riesgo de demostración. Ver `docs/alerting-context.md` y `docs/alerting-api-contract.md` (`VITE_ALERTING_API_URL`).
-- **Incidentes** (`/incidents`): bandeja y remediación simulada. Ver `docs/incident-context.md` y `docs/incident-api-contract.md` (`VITE_INCIDENT_API_URL`).
-- **Sensores y puntos** (`/assets`): despliegue de activos de monitoreo. Ver `docs/assets-context.md` y `docs/assets-api-contract.md` (`VITE_ASSET_API_URL`).
-- **Reportes** (`/compliance`): vista previa de reportes ambientales. Ver `docs/compliance-context.md` y `docs/compliance-api-contract.md` (`VITE_COMPLIANCE_API_URL`).
-
-## IAM
-
-Sesión demo, permisos por colaborador y pantallas de acceso restringido. Alcance: `docs/iam-context.md`. Variable opcional: `VITE_IAM_API_URL`.
-
-## Demo en Vercel
-
-La función `api/index.js` atiende `/api/*` en el mismo dominio del frontend. `vercel.json` enruta esas peticiones a la función y devuelve `index.html` para rutas de Vue (por ejemplo `/iam/login`).
-
-En serverless los datos en memoria pueden perderse entre instancias o reinicios. Para entornos compartidos hace falta un backend con persistencia externa.
-
-## Integración con backend real
-
-Cada contexto consume su repositorio `*-api-repository.js`. Las variables `VITE_*_API_URL` permiten apuntar a otra base; los contratos en `docs/` son provisionales hasta alinear autenticación, pagos y autorización con el backend definitivo.
+La API simulada y sus contratos de demostración permanecen en `server/` y `docs/` para desarrollo y pruebas.

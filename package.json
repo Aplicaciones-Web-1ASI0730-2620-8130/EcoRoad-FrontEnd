@@ -8,6 +8,7 @@
     "build": "vite build --configLoader native",
     "preview": "vite preview",
     "test": "node --test --test-isolation=none tests/*.test.js",
+    "smoke:real": "node scripts/smoke-real-api.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
