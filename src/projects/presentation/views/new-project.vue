@@ -8,11 +8,12 @@ import ProjectShell from '../components/project-shell.vue'
 import RoadSectionFields from '../components/road-section-fields.vue'
 import { PROJECT_TYPES } from '../../domain/road-project.js'
 import { useProjects } from '../../application/use-projects.js'
+import { useFakeApi } from '../../../shared/infrastructure/api-mode.js'
 
 const router = useRouter()
 const { registerProject, loading } = useProjects()
 const emptySection = () => ({ name: '', startPk: '', endPk: '', workFront: '' })
-const form = reactive({ name: '', location: '', type: '', concessionaireName: '', sections: [emptySection()] })
+const form = reactive({ name: '', code: '', location: '', type: '', concessionaireName: '', sections: [emptySection()] })
 const errors = ref({})
 
 function addSection() {
@@ -42,21 +43,26 @@ async function submit() {
           <p>Registra la información principal de la obra y su concesión.</p>
         </div>
       </div>
-      <Message severity="info" :closable="false">Los datos se guardan en la fake API local mientras el servidor esté en ejecución.</Message>
+      <Message severity="info" :closable="false">{{ useFakeApi ? 'Los datos se guardan temporalmente en la API simulada.' : 'El proyecto y sus tramos se guardarán en el backend real.' }}</Message>
       <Message v-if="errors.form" severity="error" :closable="false">{{ errors.form }}</Message>
       <form class="project-panel new-project-form" novalidate @submit.prevent="submit">
-        <div class="project-form-section-title"><span>01</span><div><h2>Información del proyecto</h2><p>Datos oficiales de la concesión y del corredor vial.</p></div></div>
+        <div class="project-form-section-title"><span>01</span><div><h2>Información del proyecto</h2><p>Datos principales del proyecto y del corredor vial.</p></div></div>
         <div class="project-field">
           <label for="project-name">Nombre del proyecto <b>*</b></label>
           <InputText id="project-name" v-model="form.name" placeholder="Ej. Carretera Lima - Canta" :invalid="!!errors.name" />
           <small v-if="errors.name" class="project-field-error">{{ errors.name }}</small>
         </div>
-        <div class="project-field">
+        <div v-if="!useFakeApi" class="project-field">
+          <label for="project-code">Código del proyecto <b>*</b></label>
+          <InputText id="project-code" v-model.trim="form.code" placeholder="VIAL-01" :invalid="!!errors.code" maxlength="50" />
+          <small v-if="errors.code" class="project-field-error">{{ errors.code }}</small>
+        </div>
+        <div v-if="useFakeApi" class="project-field">
           <label for="project-location">Ubicación <b>*</b></label>
           <InputText id="project-location" v-model="form.location" placeholder="Ej. Lima · PK 00+000 a 112+000" :invalid="!!errors.location" />
           <small v-if="errors.location" class="project-field-error">{{ errors.location }}</small>
         </div>
-        <div class="project-form-grid">
+        <div v-if="useFakeApi" class="project-form-grid">
           <div class="project-field">
             <label for="project-type">Tipo de obra <b>*</b></label>
             <select id="project-type" v-model="form.type" :aria-invalid="!!errors.type">

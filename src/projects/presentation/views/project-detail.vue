@@ -8,6 +8,7 @@ import ProjectShell from '../components/project-shell.vue'
 import RoadSectionFields from '../components/road-section-fields.vue'
 import { ENVIRONMENTAL_STATUSES, PROJECT_TYPES } from '../../domain/road-project.js'
 import { useProjects } from '../../application/use-projects.js'
+import { useFakeApi } from '../../../shared/infrastructure/api-mode.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -54,7 +55,7 @@ async function deleteSection(section) {
     <template #breadcrumb>Proyectos / Detalle</template>
     <div class="project-detail-page">
       <Button label="Volver a proyectos" icon="pi pi-arrow-left" text @click="router.push({ name: 'projects-list' })" />
-      <Message v-if="project && route.query.created === '1'" severity="success" :closable="false">Proyecto registrado en la fake API local.</Message>
+      <Message v-if="project && route.query.created === '1'" severity="success" :closable="false">Proyecto registrado correctamente.</Message>
       <Message v-if="error" severity="error" :closable="false">{{ error }} <button type="button" class="project-retry" @click="loadProject(route.params.id)">Reintentar</button></Message>
       <Message v-if="loading && !project" severity="info" :closable="false">Cargando proyecto...</Message>
       <div v-if="!project && !loading && !error" class="project-panel project-empty-detail">
@@ -66,12 +67,12 @@ async function deleteSection(section) {
           <div>
             <div class="project-eyebrow">{{ project.code }}</div>
             <h1>{{ project.name }}</h1>
-            <p>{{ typeLabel }} · {{ project.location }}</p>
+            <p v-if="useFakeApi">{{ typeLabel }} · {{ project.location }}</p><p v-else>Estado: {{ project.status }}</p>
           </div>
-          <Tag :severity="ENVIRONMENTAL_STATUSES[project.environmentalStatus].severity" :value="ENVIRONMENTAL_STATUSES[project.environmentalStatus].label" />
+          <Tag v-if="useFakeApi" :severity="ENVIRONMENTAL_STATUSES[project.environmentalStatus].severity" :value="ENVIRONMENTAL_STATUSES[project.environmentalStatus].label" />
         </div>
-        <Button label="Ver monitoreo ambiental" icon="pi pi-chart-line" outlined @click="router.push({ name: 'monitoring-dashboard', query: { projectId: project.id } })" />
-        <div class="project-detail-grid">
+        <Button v-if="useFakeApi" label="Ver monitoreo ambiental" icon="pi pi-chart-line" outlined @click="router.push({ name: 'monitoring-dashboard', query: { projectId: project.id } })" />
+        <div v-if="useFakeApi" class="project-detail-grid">
           <section class="project-panel"><h2>Información general</h2><dl><div><dt>Entidad concesionaria</dt><dd>{{ project.concessionaireName }}</dd></div><div><dt>Tipo de obra</dt><dd>{{ typeLabel }}</dd></div><div><dt>Ubicación</dt><dd>{{ project.location }}</dd></div></dl></section>
           <section class="project-panel"><h2>Resumen ambiental</h2><p>{{ project.environmentalNote }}</p><div class="detail-metrics"><span><strong>{{ project.sensorCount }}</strong>Sensores</span><span><strong>{{ project.alertCount }}</strong>Alertas</span><span><strong>{{ project.incidentCount }}</strong>Incidentes</span></div></section>
         </div>
@@ -82,9 +83,9 @@ async function deleteSection(section) {
           <div v-else class="project-section-list">
             <article v-for="(section, index) in project.sections" :key="section.id" class="project-section-card">
               <span class="project-section-number">{{ String(index + 1).padStart(2, '0') }}</span>
-              <div class="project-section-summary"><strong>{{ section.name }}</strong><span>PK {{ section.startPk }} a {{ section.endPk }}</span><small>Frente: {{ section.workFront }}</small></div>
+              <div class="project-section-summary"><strong>{{ section.name }}</strong><span>PK {{ section.startPk }} a {{ section.endPk }}</span><small v-if="section.workFront">Frente: {{ section.workFront }}</small></div>
               <Tag value="Activo" severity="success" />
-              <div class="project-section-actions"><Button label="Editar" icon="pi pi-pencil" text size="small" :disabled="loading" @click="editSection(section)" /><Button label="Eliminar" icon="pi pi-trash" severity="danger" text size="small" :disabled="loading || project.sections.length === 1" :title="project.sections.length === 1 ? 'El proyecto debe conservar un tramo' : ''" @click="deleteSection(section)" /></div>
+              <div class="project-section-actions"><Button label="Editar" icon="pi pi-pencil" text size="small" :disabled="loading" @click="editSection(section)" /><Button label="Eliminar" icon="pi pi-trash" severity="danger" text size="small" :disabled="loading || (useFakeApi && project.sections.length === 1)" :title="project.sections.length === 1 ? 'El proyecto debe conservar un tramo' : ''" @click="deleteSection(section)" /></div>
             </article>
           </div>
           <form v-if="sectionDraft" class="project-section-detail-editor" novalidate @submit.prevent="submitSection">

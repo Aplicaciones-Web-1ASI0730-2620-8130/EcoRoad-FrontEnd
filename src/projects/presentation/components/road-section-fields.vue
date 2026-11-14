@@ -1,5 +1,6 @@
 <script setup>
 import InputText from 'primevue/inputtext'
+import { useFakeApi } from '../../../shared/infrastructure/api-mode.js'
 
 const props = defineProps({
   section: { type: Object, required: true },
@@ -29,7 +30,7 @@ const change = (field, value) => emit('change', { ...props.section, [field]: val
     </div>
   </div>
   <small v-if="errors.range" class="project-field-error project-range-error">{{ errors.range }}</small>
-  <div class="project-field">
+  <div v-if="useFakeApi || prefix.startsWith('new-section')" class="project-field">
     <label :for="`${prefix}-front`">Frente de trabajo <b>*</b></label>
     <InputText :id="`${prefix}-front`" :model-value="section.workFront" placeholder="Ej. Movimiento de tierras" :invalid="!!errors.workFront" @update:model-value="change('workFront', $event)" />
     <small v-if="errors.workFront" class="project-field-error">{{ errors.workFront }}</small>

@@ -1,3 +1,5 @@
+import { useFakeApi } from '../../shared/infrastructure/api-mode.js'
+
 export const PROJECT_TYPES = Object.freeze([
   { value: 'construction', label: 'Construcción vial' },
   { value: 'maintenance', label: 'Mantenimiento vial' },
@@ -14,9 +16,10 @@ export const ENVIRONMENTAL_STATUSES = Object.freeze({
 export function validateRoadProject(input) {
   const errors = {}
   if (!input.name?.trim()) errors.name = 'Ingresa el nombre oficial del proyecto.'
-  if (!input.location?.trim()) errors.location = 'Ingresa la ubicación del proyecto.'
-  if (!PROJECT_TYPES.some((type) => type.value === input.type)) errors.type = 'Selecciona el tipo de obra.'
-  if (!input.concessionaireName?.trim()) errors.concessionaireName = 'Ingresa la entidad concesionaria.'
+  if (useFakeApi && !input.location?.trim()) errors.location = 'Ingresa la ubicación del proyecto.'
+  if (!useFakeApi && !input.code?.trim()) errors.code = 'Ingresa el código del proyecto.'
+  if (useFakeApi && !PROJECT_TYPES.some((type) => type.value === input.type)) errors.type = 'Selecciona el tipo de obra.'
+  if (useFakeApi && !input.concessionaireName?.trim()) errors.concessionaireName = 'Ingresa la entidad concesionaria.'
   return errors
 }
 
@@ -25,6 +28,6 @@ export function matchesProjectFilters(project, { search = '', status = 'all', ty
   const searchable = [project.name, project.code, project.location].join(' ').toLocaleLowerCase('es')
   return (!query || searchable.includes(query)) &&
     (status === 'all' || project.environmentalStatus === status) &&
-    (type === 'all' || project.type === type)
+    (!useFakeApi || type === 'all' || project.type === type)
 }
 

@@ -2,6 +2,8 @@ import { computed, ref } from 'vue'
 import { matchesProjectFilters, validateRoadProject } from '../domain/road-project.js'
 import { hasRoadSectionErrors, validateRoadSections } from '../domain/road-section.js'
 import { createProjectApiRepository } from '../infrastructure/project-api-repository.js'
+import { createProjectBackendRepository } from '../infrastructure/project-backend-repository.js'
+import { useFakeApi } from '../../shared/infrastructure/api-mode.js'
 import { getDemoCompanyId } from '../infrastructure/demo-company.js'
 
 export function createProjectsStore(api, getCompanyId = getDemoCompanyId) {
@@ -26,7 +28,7 @@ export function createProjectsStore(api, getCompanyId = getDemoCompanyId) {
       return await action()
     } catch (cause) {
       error.value = cause instanceof TypeError
-        ? 'No se pudo conectar con la fake API. Inicia npm run api:fake.'
+        ? 'No se pudo conectar con la API. Comprueba que el backend esté en ejecución.'
         : cause.message || 'Ocurrió un error al consultar proyectos.'
       return null
     } finally {
@@ -77,7 +79,7 @@ export function createProjectsStore(api, getCompanyId = getDemoCompanyId) {
       const project = projects.value.find((item) => item.id === projectId)
       if (!project) return { error: 'Proyecto no encontrado.' }
       const otherSections = project.sections.filter((section) => section.id !== input.id)
-      const errors = validateRoadSections([...otherSections, input])
+      const errors = validateRoadSections([...otherSections, input], { requireWorkFront: useFakeApi })
       if (hasRoadSectionErrors(errors)) return { errors: errors.items.at(-1) }
       const section = await run(() => input.id
         ? api.updateSection(projectId, input.id, input)
@@ -103,5 +105,5 @@ export function createProjectsStore(api, getCompanyId = getDemoCompanyId) {
 
 const baseUrl = import.meta.env?.VITE_PROJECTS_API_URL ||
   new URL('/api/', globalThis.location?.origin || 'http://127.0.0.1:3001').href
-const defaultStore = createProjectsStore(createProjectApiRepository({ baseUrl, getCompanyId: getDemoCompanyId }))
+const defaultStore = createProjectsStore((useFakeApi ? createProjectApiRepository : createProjectBackendRepository)({ baseUrl, getCompanyId: getDemoCompanyId }))
 export function useProjects() { return defaultStore }

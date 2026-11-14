@@ -4,7 +4,7 @@ export function parseKilometerPost(value) {
   return Number(match[1]) * 1000 + Number(match[2])
 }
 
-export function validateRoadSections(sections, { required = true } = {}) {
+export function validateRoadSections(sections, { required = true, requireWorkFront = true } = {}) {
   const errors = { items: [] }
   if (!Array.isArray(sections) || sections.length === 0) {
     if (required) errors.sections = 'Agrega al menos un tramo del corredor vial.'
@@ -15,7 +15,7 @@ export function validateRoadSections(sections, { required = true } = {}) {
   sections.forEach((section, index) => {
     const row = {}
     if (!section.name?.trim()) row.name = 'Ingresa el nombre del tramo.'
-    if (!section.workFront?.trim()) row.workFront = 'Describe el frente de trabajo.'
+    if (requireWorkFront && !section.workFront?.trim()) row.workFront = 'Describe el frente de trabajo.'
 
     const start = parseKilometerPost(section.startPk)
     const end = parseKilometerPost(section.endPk)
