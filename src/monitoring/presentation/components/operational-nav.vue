@@ -1,5 +1,6 @@
 <script setup>
 import { currentUser } from '../../../iam/application/iam-session.js'
+import { useFakeApi } from '../../../shared/infrastructure/api-mode.js'
 
 defineProps({
   navClass: { type: String, required: true },
@@ -27,6 +28,12 @@ defineProps({
       :class="{ active: $route.name === 'monitoring-history' }"
       :aria-current="$route.name === 'monitoring-history' ? 'page' : undefined"
     ><i class="pi pi-history" aria-hidden="true"></i> Historial</RouterLink>
+    <RouterLink
+      v-if="!useFakeApi && currentUser?.permissions?.includes('consult_indicators')"
+      to="/monitoring/operations"
+      :class="{ active: $route.name === 'monitoring-operations' }"
+      :aria-current="$route.name === 'monitoring-operations' ? 'page' : undefined"
+    ><i class="pi pi-pencil" aria-hidden="true"></i> Registrar monitoreo</RouterLink>
     <RouterLink
       v-if="currentUser?.permissions?.includes('consult_sensors')"
       to="/assets"

@@ -6,6 +6,12 @@ export default [
     meta: { title: 'Monitoreo ambiental' },
   },
   {
+    path: 'operations',
+    name: 'monitoring-operations',
+    component: () => import('./views/monitoring-operations.vue'),
+    meta: { title: 'Registrar monitoreo' },
+  },
+  {
     path: 'history',
     name: 'monitoring-history',
     component: () => import('./views/indicator-history.vue'),

@@ -1,0 +1,13 @@
+.operations-grid { display: grid; grid-template-columns: repeat(3, minmax(260px, 1fr)); gap: 18px; align-items: start; margin-top: 20px; }
+.operations-panel { display: grid; gap: 13px; padding: 22px; border: 1px solid #dfe8ee; border-radius: 9px; background: #fff; }
+.operations-panel h2 { margin: 0; color: #1c2a3e; font-size: 19px; }
+.operations-panel h3 { margin: 14px 0 0; padding-top: 14px; border-top: 1px solid #e5edf1; color: #1c2a3e; font-size: 15px; }
+.operations-panel p { margin: 0; color: #688098; font-size: 12px; line-height: 1.45; }
+.operations-panel label { display: grid; gap: 6px; color: #48667a; font-size: 12px; font-weight: 700; }
+.operations-panel input, .operations-panel select { width: 100%; min-width: 0; height: 40px; padding: 0 10px; border: 1px solid #cddbe4; border-radius: 6px; background: #fff; color: #20374b; font: inherit; font-weight: 400; }
+.operations-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.operations-panel .p-button { justify-self: start; }
+.operations-panel .operations-note { color: #8a6b18; }
+.operations-panel .operations-result { padding: 10px; border-radius: 6px; background: #eaf8f3; color: #14674e; overflow-wrap: anywhere; }
+@media (max-width: 1100px) { .operations-grid { grid-template-columns: repeat(2, minmax(260px, 1fr)); } }
+@media (max-width: 750px) { .operations-grid { grid-template-columns: 1fr; } }
